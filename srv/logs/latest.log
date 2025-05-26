@@ -1,0 +1,90 @@
+[15:07:28] [ServerMain/INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.7+6-LTS; Eclipse Adoptium Temurin-21.0.7+6) on Windows 11 10.0 (amd64)
+[15:07:28] [ServerMain/INFO]: [bootstrap] Loading Paper 1.21.4-231-ver/1.21.4@09e9afd (2025-05-19T17:59:36Z) for Minecraft 1.21.4
+[15:07:29] [ServerMain/INFO]: [PluginInitializerManager] Initializing plugins...
+[15:07:30] [ServerMain/INFO]: [PluginInitializerManager] Initialized 1 plugin
+[15:07:30] [ServerMain/INFO]: [PluginInitializerManager] Paper plugins (1):
+ - RPGCore (1.0)
+[15:07:34] [ServerMain/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[15:07:36] [ServerMain/INFO]: Loaded 1370 recipes
+[15:07:36] [ServerMain/INFO]: Loaded 1481 advancements
+[15:07:36] [ServerMain/INFO]: [MCTypeRegistry] Initialising converters for DataConverter...
+[15:07:36] [ServerMain/INFO]: [MCTypeRegistry] Finished initialising converters for DataConverter in 213,4ms
+[15:07:36] [Server thread/INFO]: Starting minecraft server version 1.21.4
+[15:07:36] [Server thread/INFO]: Loading properties
+[15:07:37] [Server thread/INFO]: This server is running Paper version 1.21.4-231-ver/1.21.4@09e9afd (2025-05-19T17:59:36Z) (Implementing API version 1.21.4-R0.1-SNAPSHOT)
+[15:07:37] [Server thread/INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[15:07:37] [Server thread/INFO]: Server Ping Player Sample Count: 12
+[15:07:37] [Server thread/INFO]: Using 4 threads for Netty based IO
+[15:07:37] [Server thread/INFO]: [MoonriseCommon] Paper is using 3 worker threads, 1 I/O threads
+[15:07:37] [Server thread/INFO]: [ChunkTaskScheduler] Chunk system is using population gen parallelism: true
+[15:07:38] [Server thread/INFO]: Default game type: SURVIVAL
+[15:07:38] [Server thread/INFO]: Generating keypair
+[15:07:38] [Server thread/INFO]: Starting Minecraft server on *:25565
+[15:07:38] [Server thread/INFO]: Using default channel type
+[15:07:38] [Server thread/INFO]: Paper: Using Java compression from Velocity.
+[15:07:38] [Server thread/INFO]: Paper: Using Java cipher from Velocity.
+[15:07:38] [Server thread/INFO]: [RPGCore] Loading server plugin RPGCore v1.0
+[15:07:38] [Server thread/INFO]: Server permissions file permissions.yml is empty, ignoring it
+[15:07:38] [Server thread/INFO]: Preparing level "world"
+[15:07:38] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[15:07:39] [Server thread/INFO]: Preparing spawn area: 0%
+[15:07:39] [Server thread/INFO]: Preparing spawn area: 4%
+[15:07:39] [Server thread/INFO]: Time elapsed: 861 ms
+[15:07:39] [Server thread/INFO]: Preparing start region for dimension minecraft:the_nether
+[15:07:39] [Server thread/INFO]: Preparing spawn area: 0%
+[15:07:39] [Server thread/INFO]: Time elapsed: 104 ms
+[15:07:39] [Server thread/INFO]: Preparing start region for dimension minecraft:the_end
+[15:07:39] [Server thread/INFO]: Preparing spawn area: 0%
+[15:07:39] [Server thread/INFO]: Time elapsed: 66 ms
+[15:07:39] [Server thread/INFO]: [RPGCore] Enabling RPGCore v1.0
+[15:07:39] [Server thread/INFO]: [RPGCore] §eLoading ganamaga's RPGCore...
+[15:07:40] [Server thread/INFO]: [RPGCore] §aYou are running the latest version of RPGCore.
+[15:07:40] [Server thread/INFO]: [RPGCore] §aRPGCore Loaded!
+[15:07:40] [Server thread/INFO]: [spark] Starting background profiler...
+[15:07:40] [Server thread/INFO]: [spark] The async-profiler engine is not supported for your os/arch (windows11/amd64), so the built-in Java engine will be used instead.
+[15:07:40] [Server thread/INFO]: Done preparing level "world" (1.950s)
+[15:07:40] [Server thread/INFO]: Running delayed init tasks
+[15:07:40] [Server thread/INFO]: Done (12.986s)! For help, type "help"
+[15:07:45] [User Authenticator #0/INFO]: UUID of player ganamaga is 39f2b235-b700-49d5-b9e8-a186313fa062
+[15:07:45] [Server thread/INFO]: ganamaga joined the game
+[15:07:45] [Server thread/INFO]: ganamaga[/127.0.0.1:55251] logged in with entity id 87 at ([world]4.491971753869253, 97.37429331309657, 17.08348096959424)
+[15:07:53] [Server thread/INFO]: [RPGCore] [STDOUT] Any other: 0
+[15:07:53] [Server thread/WARN]: Nag author(s): '[vitekform]' of 'RPGCore v1.0' about their usage of System.out/err.print. Please use your plugin's logger instead (JavaPlugin#getLogger).
+[15:07:55] [Server thread/INFO]: [RPGCore] [STDOUT] Any other: 0
+[15:07:55] [Server thread/INFO]: [RPGCore] [STDOUT] Any other: 40
+[15:17:33] [Server thread/INFO]: Stopping the server
+[15:17:33] [Server thread/INFO]: Stopping server
+[15:17:33] [Server thread/INFO]: [RPGCore] Disabling RPGCore v1.0
+[15:17:33] [Server thread/INFO]: Saving players
+[15:17:33] [Server thread/INFO]: ganamaga lost connection: Server closed
+[15:17:33] [Server thread/INFO]: ganamaga left the game
+[15:17:33] [Server thread/INFO]: Saving worlds
+[15:17:33] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Saved 26 block chunks, 157 entity chunks, 0 poi chunks in world 'world' in 0,12s
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world'
+[15:17:33] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world_nether]'/minecraft:the_nether
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_nether'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Saved 0 block chunks, 5 entity chunks, 0 poi chunks in world 'world_nether' in 0,02s
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_nether'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_nether'
+[15:17:33] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world_the_end]'/minecraft:the_end
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_the_end'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Saved 0 block chunks, 10 entity chunks, 0 poi chunks in world 'world_the_end' in 0,02s
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_the_end'
+[15:17:33] [Server thread/INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_the_end'
+[15:17:33] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[15:17:33] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[15:17:33] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[15:17:33] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[15:17:33] [Server thread/INFO]: Waiting for I/O tasks to complete...
+[15:17:33] [Server thread/INFO]: All I/O tasks to complete
+[15:17:33] [Server thread/INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[15:17:33] [Server thread/INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...

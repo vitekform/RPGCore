@@ -2,6 +2,7 @@ package cz.vitekform.rPGCore.listeners;
 
 import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.RPGClass;
+import cz.vitekform.rPGCore.objects.RPGPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -27,9 +28,11 @@ public class InventoryHandler implements Listener {
             }
             if (event.getInventory().getHolder() instanceof Player) {
                 // It is player inventory
-                p.sendMessage("Slot: "+ event.getSlot());
-                if (event.getSlot() >= 36 && event.getSlot() <= 39) {
-                    // It is armor
+                if (event.getSlot() >= 36 && event.getSlot() <= 40) {
+                    // It is armor or offhand
+                    System.out.println("Armor attempt: " + event.getSlot());
+                    RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
+                    rpgp.updateItemStats();
                 }
             }
         }

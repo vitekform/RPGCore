@@ -22,6 +22,7 @@ public class PlayerDamageHandler implements Listener {
 
                 if (RPGCore.playerStorage.get(p.getUniqueId()).health <= 0) {
                     p.setHealth(0);
+                    System.out.println("death");
                 }
                 else {
                     RPGPlayer rp = RPGCore.playerStorage.get(p.getUniqueId());

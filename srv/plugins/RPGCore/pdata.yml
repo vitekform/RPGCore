@@ -1,0 +1,18 @@
+player:
+  39f2b235-b700-49d5-b9e8-a186313fa062:
+    level: 0
+    exp: 0
+    maxExp: 0
+    skillPoints: 0
+    strength: 0
+    dexterity: 0
+    intelligence: 0
+    vitality: 0
+    endurance: 0
+    totalSkillPoints: 0
+    attributePoints: 0
+    maxHealth: 1.0
+    health: 1.0
+    maxMana: 0
+    mana: 0
+    rpgClass: NONE

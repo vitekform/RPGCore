@@ -42,6 +42,9 @@ public class LoginHandler implements Listener {
         }
         else {
             RPGPlayer rpgp = new RPGPlayer(p.getUniqueId());
+            rpgp.rpgClass = RPGClass.NONE;
+            rpgp.maxHealth = 1D;
+            rpgp.health = 1D;
             RPGCore.playerStorage.put(p.getUniqueId(), rpgp);
         }
         RPGCore.syncDataWithReality(p);

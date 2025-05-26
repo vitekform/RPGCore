@@ -13,8 +13,11 @@ import cz.vitekform.rPGCore.pluginUtils.PluginUpdater;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -41,6 +44,116 @@ import java.util.UUID;
 public final class RPGCore extends JavaPlugin {
 
     public static final Map<UUID, RPGPlayer> playerStorage = new HashMap<>();
+
+    public static List<Component> fancyText(List<Component> original) {
+        List<String> lines = new java.util.ArrayList<>();
+        List<TextColor> colors = new java.util.ArrayList<>();
+        List<String> nLines = new java.util.ArrayList<>();
+        for (Component c : original) {
+            String plainText = PlainTextComponentSerializer.plainText().serialize(c);
+            lines.add(plainText);
+            colors.add(c.color());
+        }
+
+        for (String s : lines) {
+            char[] chars = s.toCharArray();
+            List<Character> nChars = new java.util.ArrayList<>();
+            for (char c : chars) {
+                if (c == 'a' || c == 'A') {
+                    c = 'ᴀ';
+                }
+                else if (c == 'b' || c == 'B') {
+                    c = 'ʙ';
+                }
+                else if (c == 'c' || c == 'C') {
+                    c = 'ᴄ';
+                }
+                else if (c == 'd' || c == 'D') {
+                    c = 'ᴅ';
+                }
+                else if (c == 'e' || c == 'E') {
+                    c = 'ᴇ';
+                }
+                else if (c == 'f' || c == 'F') {
+                    c = 'ꜰ';
+                }
+                else if (c == 'g' || c == 'G') {
+                    c = 'ɢ';
+                }
+                else if (c == 'h' || c == 'H') {
+                    c = 'ʜ';
+                }
+                else if (c == 'i' || c == 'I') {
+                    c = 'ɪ';
+                }
+                else if (c == 'j' || c == 'J') {
+                    c = 'ᴊ';
+                }
+                else if (c == 'k' || c == 'K') {
+                    c = 'ᴋ';
+                }
+                else if (c == 'l' || c == 'L') {
+                    c = 'ʟ';
+                }
+                else if (c == 'm' || c == 'M') {
+                    c = 'ᴍ';
+                }
+                else if (c == 'n' || c == 'N') {
+                    c = 'ɴ';
+                }
+                else if (c == 'o' || c == 'O') {
+                    c = 'ᴏ';
+                }
+                else if (c == 'p' || c == 'P') {
+                    c = 'ᴘ';
+                }
+                else if (c == 'q' || c == 'Q') {
+                    c = 'ǫ';
+                }
+                else if (c == 'r' || c == 'R') {
+                    c = 'ʀ';
+                }
+                else if (c == 's' || c == 'S') {
+                    c = 's';
+                }
+                else if (c == 't' || c == 'T') {
+                    c = 'ᴛ';
+                }
+                else if (c == 'u' || c == 'U') {
+                    c = 'ᴜ';
+                }
+                else if (c == 'v' || c == 'V') {
+                    c = 'ᴠ';
+                }
+                else if (c == 'w' || c == 'W') {
+                    c = 'ᴡ';
+                }
+                else if (c == 'x' || c == 'X') {
+                    c = 'x';
+                }
+                else if (c == 'y' || c == 'Y') {
+                    c = 'ʏ';
+                }
+                else if (c == 'z' || c == 'Z') {
+                    c = 'ᴢ';
+                }
+                nChars.add(c);
+            }
+            String nString = "";
+            for (Character c : nChars) {
+                nString += c;
+            }
+            if (!nString.isBlank()) {
+                nLines.add(nString);
+                colors.add(colors.get(lines.indexOf(s))); // also keep color in sync
+            }
+        }
+        List<Component> nComponents = new java.util.ArrayList<>();
+        for (int i = 0; i < nLines.size(); i++) {
+            nComponents.add(Component.text(nLines.get(i), colors.get(i)));
+        }
+        return nComponents;
+    }
 
     @Override
     public void onEnable() {
