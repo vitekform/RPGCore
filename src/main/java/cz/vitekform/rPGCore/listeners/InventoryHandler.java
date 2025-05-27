@@ -2,6 +2,7 @@ package cz.vitekform.rPGCore.listeners;
 
 import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.RPGClass;
+import cz.vitekform.rPGCore.objects.RPGItem;
 import cz.vitekform.rPGCore.objects.RPGPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -11,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 
 public class InventoryHandler implements Listener {
 
@@ -36,5 +39,19 @@ public class InventoryHandler implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void whenPlayerSwitchesItemInOffhand(PlayerSwapHandItemsEvent event) {
+        Player p = event.getPlayer();
+        RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
+        rpgp.updateItemStats();
+    }
+
+    @EventHandler
+    public void whenPlayerChangesItemInMainhand(PlayerItemHeldEvent event) {
+        Player p = event.getPlayer();
+        RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
+        rpgp.updateItemStats();
     }
 }

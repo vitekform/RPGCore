@@ -69,9 +69,10 @@ public class ItemDictionary {
         rpgItem.reqClass = RPGClass.WARRIOR;
         rpgItem.attack = 6;
         rpgItem.attackSpeed = 1.6;
-        rpgItem.defense = 0;
+        rpgItem.defense = 10;
         rpgItem.health = 0;
         rpgItem.speed = 0;
+        rpgItem.slotReq = -1; // -1 means any slot (i hope players aren't going to put it in their offhand)
         rpgItem.material = Material.IRON_SWORD;
         return rpgItem;
     }

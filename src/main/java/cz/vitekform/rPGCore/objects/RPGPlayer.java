@@ -1,9 +1,14 @@
 package cz.vitekform.rPGCore.objects;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -12,6 +17,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class RPGPlayer {
@@ -20,29 +26,54 @@ public class RPGPlayer {
     public String ingameNick;
     public String rpgName;
     public int level;
-    public int defense;
+    public int defense_Base;
     public int exp;
     public int maxExp;
     public int skillPoints;
-    public int strength;
-    public int dexterity;
-    public int intelligence;
-    public int vitality;
-    public int endurance;
+    public Map<RPGAttribute, Integer> baseAttributes;
+    public Map<RPGAttribute, Integer> itemAttributes;
+
+    public Map<RPGAttribute, Integer> totalAttributes() {
+        return Map.of(
+            RPGAttribute.STRENGTH, baseAttributes.getOrDefault(RPGAttribute.STRENGTH, 0) + itemAttributes.getOrDefault(RPGAttribute.STRENGTH, 0),
+            RPGAttribute.DEXTERITY, baseAttributes.getOrDefault(RPGAttribute.DEXTERITY, 0) + itemAttributes.getOrDefault(RPGAttribute.DEXTERITY, 0),
+            RPGAttribute.INTELLIGENCE, baseAttributes.getOrDefault(RPGAttribute.INTELLIGENCE, 0) + itemAttributes.getOrDefault(RPGAttribute.INTELLIGENCE, 0),
+            RPGAttribute.VITALITY, baseAttributes.getOrDefault(RPGAttribute.VITALITY, 0) + itemAttributes.getOrDefault(RPGAttribute.VITALITY, 0),
+            RPGAttribute.ENDURANCE, baseAttributes.getOrDefault(RPGAttribute.ENDURANCE, 0) + itemAttributes.getOrDefault(RPGAttribute.ENDURANCE, 0)
+        );
+    }
+
+    public void giveItem(RPGItem item) {
+        // Check if player has enough space in inventory
+        Player player = Bukkit.getPlayer(uuid);
+        Inventory inventory = player.getInventory();
+        if (inventory.firstEmpty() == -1) {
+            player.sendMessage("You didn't have enough space in your inventory to receive this item! Instead it was dropped on the ground.");
+            player.getWorld().dropItemNaturally(player.getLocation(), item.build());
+            return;
+        }
+        // Add item to inventory
+        ItemStack itemStack = item.build();
+        if (itemStack != null) {
+            inventory.addItem(itemStack);
+            player.sendMessage("You received: " + item.itemName);
+        } else {
+            player.sendMessage("Failed to create item: " + item.itemName);
+        }
+    }
+
     public int totalSkillPoints;
     public int attributePoints;
     public int totalAttributePoints;
-    public double maxHealth;
+    public double maxHealth_Base;
     public double health;
-    public int maxMana;
+    public int maxMana_Base;
     public int mana;
     public RPGClass rpgClass;
 
-    public int strengthTotal;
-    public int dexterityTotal;
-    public int intelligenceTotal;
-    public int vitalityTotal;
-    public int enduranceTotal;
+    public int attackDMG_Base;
+    public double attackSPD_Base;
+    public double speed_Base;
 
     public double attackDMG_Items;
     public double attackSPD_Items;
@@ -50,30 +81,6 @@ public class RPGPlayer {
     public int health_Items;
     public double speed_Items;
     public int mana_Items;
-
-    public RPGPlayer(UUID uuid, String ingameNick, String rpgName, int level, int exp, int maxExp, int skillPoints, int strength, int dexterity, int intelligence, int vitality, int endurance, int totalSkillPoints, int attributePoints, double maxHealth, double health, int maxMana, int mana, RPGClass rpgClass, int totalAttributePoints, int defense) {
-        this.totalAttributePoints = totalAttributePoints;
-        this.defense = defense;
-        this.uuid = uuid;
-        this.ingameNick = ingameNick;
-        this.rpgName = rpgName;
-        this.level = level;
-        this.exp = exp;
-        this.maxExp = maxExp;
-        this.skillPoints = skillPoints;
-        this.strength = strength;
-        this.dexterity = dexterity;
-        this.intelligence = intelligence;
-        this.vitality = vitality;
-        this.endurance = endurance;
-        this.totalSkillPoints = totalSkillPoints;
-        this.attributePoints = attributePoints;
-        this.maxHealth = maxHealth;
-        this.health = health;
-        this.maxMana = maxMana;
-        this.mana = mana;
-        this.rpgClass = rpgClass;
-    }
 
     public RPGPlayer(UUID uuid) {
         this.uuid = uuid;
@@ -94,13 +101,31 @@ public class RPGPlayer {
         Player p = Bukkit.getPlayer(uuid);
         Inventory i = p.getInventory();
 
+        // First reset all item stats
+        attackDMG_Items = 0;
+        attackSPD_Items = 0;
+        defense_Items = 0;
+        health_Items = 0;
+        speed_Items = 0;
+        mana_Items = 0;
+
+        // Get all items to check
         ItemStack helmetItem = i.getItem(39);
         ItemStack chestplateItem = i.getItem(38);
         ItemStack leggingsItem = i.getItem(37);
         ItemStack bootsItem = i.getItem(36);
-        ItemStack handItem = p.getActiveItem();
+        ItemStack handItem = p.getItemInHand();
         ItemStack offHandItem = i.getItem(40);
 
+        List<ItemStack> itemsToCount = new ArrayList<>();
+        itemsToCount.add(helmetItem);
+        itemsToCount.add(chestplateItem);
+        itemsToCount.add(leggingsItem);
+        itemsToCount.add(bootsItem);
+        itemsToCount.add(handItem);
+        itemsToCount.add(offHandItem);
+
+        // Define keys
         NamespacedKey key_class = new NamespacedKey("rpgcore", "rpg_item_class");
         NamespacedKey key_level = new NamespacedKey("rpgcore", "rpg_item_level");
         NamespacedKey key_attack = new NamespacedKey("rpgcore", "rpg_item_attack");
@@ -111,63 +136,61 @@ public class RPGPlayer {
         NamespacedKey key_mana = new NamespacedKey("rpgcore", "rpg_item_mana");
         NamespacedKey key_slot = new NamespacedKey("rpgcore", "rpg_item_slot");
 
-        List<ItemStack> itemToCount = new ArrayList<>();
-
-        itemToCount.add(helmetItem);
-        itemToCount.add(chestplateItem);
-        itemToCount.add(leggingsItem);
-        itemToCount.add(bootsItem);
-        itemToCount.add(handItem);
-        itemToCount.add(offHandItem);
-
-        double totalAttackSpeed = 0D;
-        double totalAttack = 0D;
-        int totalDefense = 0;
-        int totalHealth = 0;
-        double totalSpeed = 0D;
-        int totalMana = 0;
-
-        for (ItemStack is : itemToCount) {
-            if (is != null && is.getType() != Material.AIR && is.getItemMeta()
-                                                              != null) {
+        // Calculate all stats from valid items
+        for (ItemStack is : itemsToCount) {
+            if (is != null && is.getType() != Material.AIR && is.hasItemMeta()) {
                 int slotInInv = -1;
                 for (int x = 0; x < p.getInventory().getSize(); x++) {
                     if (p.getInventory().getItem(x) == is) {
                         slotInInv = x;
+                        break; // Found it, no need to continue checking
                     }
                 }
+
                 ItemMeta im = is.getItemMeta();
                 PersistentDataContainer pdc = im.getPersistentDataContainer();
-                RPGClass reqClass = RPGClass.valueOf(pdc.getOrDefault(key_class, PersistentDataType.STRING, null));
+
+                String classStr = pdc.getOrDefault(key_class, PersistentDataType.STRING, "");
+                if (classStr.isEmpty()) continue;
+
+                RPGClass reqClass = RPGClass.valueOf(classStr);
                 if (reqClass == rpgClass || reqClass == RPGClass.ANY) {
                     int levelReq = pdc.getOrDefault(key_level, PersistentDataType.INTEGER, 0);
                     if (level >= levelReq) {
                         int slotReq = pdc.getOrDefault(key_slot, PersistentDataType.INTEGER, -1);
                         if (slotReq == -1 || slotReq == slotInInv) {
-                            double attackAdd = pdc.getOrDefault(key_attack, PersistentDataType.DOUBLE, 0D);
-                            double attackSpeedAdd = pdc.getOrDefault(key_attack_speed, PersistentDataType.DOUBLE, 0D);
-                            int defenseAdd = pdc.getOrDefault(key_defense, PersistentDataType.INTEGER, 0);
-                            int healthAdd = pdc.getOrDefault(key_health, PersistentDataType.INTEGER, 0);
-                            double speedAdd = pdc.getOrDefault(key_speed, PersistentDataType.DOUBLE, 0D);
-                            int manaAdd = pdc.getOrDefault(key_mana, PersistentDataType.INTEGER, 0);
-
-                            totalAttack += attackAdd;
-                            totalAttackSpeed += attackSpeedAdd;
-                            totalDefense += defenseAdd;
-                            totalHealth += healthAdd;
-                            totalSpeed += speedAdd;
-                            totalMana += manaAdd;
+                            // Add stats to player's total
+                            attackDMG_Items += pdc.getOrDefault(key_attack, PersistentDataType.DOUBLE, 0D);
+                            attackSPD_Items += pdc.getOrDefault(key_attack_speed, PersistentDataType.DOUBLE, 0D);
+                            defense_Items += pdc.getOrDefault(key_defense, PersistentDataType.INTEGER, 0);
+                            health_Items += pdc.getOrDefault(key_health, PersistentDataType.INTEGER, 0);
+                            speed_Items += pdc.getOrDefault(key_speed, PersistentDataType.DOUBLE, 0D);
+                            mana_Items += pdc.getOrDefault(key_mana, PersistentDataType.INTEGER, 0);
+                        } else {
+                            p.sendMessage(Component.text("You cannot equip " + is.getItemMeta().displayName() + " in this slot!").color(NamedTextColor.RED));
                         }
+                    } else {
+                        p.sendMessage(Component.text("You are not high enough level to use one or more of your equipped items!").color(NamedTextColor.RED));
                     }
+                } else {
+                    p.sendMessage(Component.text("You are using one or more items from a different class than your own!").color(NamedTextColor.RED));
                 }
             }
         }
 
-        attackDMG_Items = totalAttack;
-        attackSPD_Items = totalAttackSpeed;
-        defense_Items = totalDefense;
-        health_Items = totalHealth;
-        speed_Items = totalSpeed;
-        mana_Items = totalMana;
+        // Now update the item attributes after all stats are calculated
+        if (handItem != null && handItem.getType() != Material.AIR && handItem.hasItemMeta()) {
+            ItemMeta handMeta = handItem.getItemMeta();
+            handMeta.removeAttributeModifier(Attribute.ATTACK_SPEED);
+            handMeta.removeAttributeModifier(Attribute.ATTACK_DAMAGE);
+            handMeta.addAttributeModifier(Attribute.ATTACK_SPEED,
+                    new AttributeModifier(UUID.randomUUID(), "rpgcore.attack_speed",
+                            attackSPD_Items + attackSPD_Base, AttributeModifier.Operation.ADD_NUMBER));
+            // Set attack damage to 0 since it's handled by your system
+            handMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE,
+                    new AttributeModifier(UUID.randomUUID(), "rpgcore.attack_damage",
+                            0, AttributeModifier.Operation.ADD_NUMBER));
+            handItem.setItemMeta(handMeta);
+        }
     }
 }
