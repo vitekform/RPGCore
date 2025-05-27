@@ -3,6 +3,7 @@ cz\vitekform\rPGCore\objects\RPGPlayer.class
 cz\vitekform\rPGCore\objects\ReleaseChannel.class
 cz\vitekform\rPGCore\objects\RPGItem.class
 cz\vitekform\rPGCore\RPGCore$1.class
+cz\vitekform\rPGCore\listeners\InventoryHandler$1.class
 cz\vitekform\rPGCore\listeners\LoginHandler.class
 cz\vitekform\rPGCore\listeners\PlayerDamageHandler.class
 cz\vitekform\rPGCore\objects\RPGClass.class

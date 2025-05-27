@@ -158,7 +158,29 @@ public class RPGPlayer {
                     int levelReq = pdc.getOrDefault(key_level, PersistentDataType.INTEGER, 0);
                     if (level >= levelReq) {
                         int slotReq = pdc.getOrDefault(key_slot, PersistentDataType.INTEGER, -1);
-                        if (slotReq == -1 || slotReq == slotInInv) {
+                        boolean matchesSlot = false;
+                        if (slotReq == 0 && is.equals(handItem)) {
+                            matchesSlot = true;
+                        }
+                        else if (slotReq == 1 && is.equals(helmetItem)) {
+                            matchesSlot = true;
+                        }
+                        else if (slotReq == 2 && is.equals(chestplateItem)) {
+                            matchesSlot = true;
+                        }
+                        else if (slotReq == 3 && is.equals(leggingsItem)) {
+                            matchesSlot = true;
+                        }
+                        else if (slotReq == 4 && is.equals(bootsItem)) {
+                            matchesSlot = true;
+                        }
+                        else if (slotReq == 5 && is.equals(offHandItem)) {
+                            matchesSlot = true;
+                        }
+                        else if (slotReq == -1) {
+                            matchesSlot = true; // -1 means any slot
+                        }
+                        if (matchesSlot) {
                             // Add stats to player's total
                             attackDMG_Items += pdc.getOrDefault(key_attack, PersistentDataType.DOUBLE, 0D);
                             attackSPD_Items += pdc.getOrDefault(key_attack_speed, PersistentDataType.DOUBLE, 0D);
@@ -185,11 +207,11 @@ public class RPGPlayer {
             handMeta.removeAttributeModifier(Attribute.ATTACK_DAMAGE);
             handMeta.addAttributeModifier(Attribute.ATTACK_SPEED,
                     new AttributeModifier(UUID.randomUUID(), "rpgcore.attack_speed",
-                            attackSPD_Items + attackSPD_Base, AttributeModifier.Operation.ADD_NUMBER));
+                            attackSPD_Items + attackSPD_Base, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND));
             // Set attack damage to 0 since it's handled by your system
             handMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE,
                     new AttributeModifier(UUID.randomUUID(), "rpgcore.attack_damage",
-                            0, AttributeModifier.Operation.ADD_NUMBER));
+                            0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND));
             handItem.setItemMeta(handMeta);
         }
     }

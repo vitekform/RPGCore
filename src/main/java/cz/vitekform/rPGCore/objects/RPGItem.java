@@ -3,6 +3,7 @@ package cz.vitekform.rPGCore.objects;
 import cz.vitekform.rPGCore.ItemDictionary;
 import cz.vitekform.rPGCore.RPGCore;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -65,30 +66,44 @@ public class RPGItem {
         im.displayName(itemName);
 
         List<Component> lore = new ArrayList<>(itemLore != null ? itemLore : new ArrayList<>());
-        lore.add(Component.newline());
         if (reqClass != RPGClass.ANY) {
-            lore.add(Component.text("Class: " + getNormalName(reqClass)));
+            lore.add(Component.text("Class: " + getNormalName(reqClass)).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
         }
         if (reqLevel > 0) {
-            lore.add(Component.text("Required Level: " + reqLevel));
+            lore.add(Component.text("Required Level: " + reqLevel).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
         }
         if (attack > 0) {
-            lore.add(Component.text("Attack: " + attack));
+            lore.add(Component.text("Attack: " + attack).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GRAY));
         }
         if (attackSpeed > 0) {
-            lore.add(Component.text("Attack Speed: " + attackSpeed));
+            lore.add(Component.text("Attack Speed: " + attackSpeed).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GRAY));
         }
         if (defense > 0) {
-            lore.add(Component.text("Defense: " + defense));
+            lore.add(Component.text("Defense: " + defense).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GREEN));
         }
         if (health > 0) {
-            lore.add(Component.text("Health: " + health));
+            lore.add(Component.text("Health: " + health).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.RED));
         }
         if (speed > 0) {
-            lore.add(Component.text("Speed: " + speed));
+            lore.add(Component.text("Speed: " + speed).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
         }
         if (mana > 0) {
-            lore.add(Component.text("Mana: " + mana));
+            lore.add(Component.text("Mana: " + mana).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.AQUA));
+        }
+        if (slotReq != -1) {
+            if (slotReq == 0) {
+                lore.add(Component.text("Slot: Main Hand").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
+            } else if (slotReq == 1) {
+                lore.add(Component.text("Slot: Helmet").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
+            } else if (slotReq == 2) {
+                lore.add(Component.text("Slot: Chestplate").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
+            } else if (slotReq == 3) {
+                lore.add(Component.text("Slot: Leggings").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
+            } else if (slotReq == 4) {
+                lore.add(Component.text("Slot: Boots").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
+            } else if (slotReq == -5) {
+                lore.add(Component.text("Slot: Offhand").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
+            }
         }
 
         lore = RPGCore.fancyText(lore);

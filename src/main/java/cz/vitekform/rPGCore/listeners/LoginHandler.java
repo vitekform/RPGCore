@@ -67,6 +67,7 @@ public class LoginHandler implements Listener {
             RPGPlayer rpgp = new RPGPlayer(p.getUniqueId());
             rpgp.rpgClass = RPGClass.NONE;
             rpgp.maxHealth_Base = 1D;
+            rpgp.level = 1;
             rpgp.baseAttributes = new HashMap<>();
             rpgp.itemAttributes = new HashMap<>();
             rpgp.health = 1D;
