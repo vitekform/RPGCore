@@ -4,6 +4,7 @@ import cz.vitekform.rPGCore.objects.RPGClass;
 import cz.vitekform.rPGCore.objects.RPGItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -18,7 +19,7 @@ public class ItemDictionary {
     public static RPGItem warriorClassItem() {
         RPGItem rpgItem = new RPGItem();
         rpgItem.itemName = Component.text("Warrior").color(NamedTextColor.RED);
-        rpgItem.itemLore = List.of(Component.text("A strong and brave warrior.").color(NamedTextColor.GRAY));
+        rpgItem.itemLore = List.of(Component.text("A strong and brave warrior.").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
         rpgItem.reqLevel = 0;
         rpgItem.reqClass = RPGClass.ANY;
         rpgItem.attack = 0;
@@ -33,7 +34,7 @@ public class ItemDictionary {
     public static RPGItem archerClassItem() {
         RPGItem rpgItem = new RPGItem();
         rpgItem.itemName = Component.text("Archer").color(NamedTextColor.GREEN);
-        rpgItem.itemLore = List.of(Component.text("A skilled archer").color(NamedTextColor.GRAY));
+        rpgItem.itemLore = List.of(Component.text("A skilled archer").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
         rpgItem.reqLevel = 0;
         rpgItem.reqClass = RPGClass.ANY;
         rpgItem.attack = 0;
@@ -48,7 +49,7 @@ public class ItemDictionary {
     public static RPGItem mageClassItem() {
         RPGItem rpgItem = new RPGItem();
         rpgItem.itemName = Component.text("Mage").color(NamedTextColor.BLUE);
-        rpgItem.itemLore = List.of(Component.text("A powerful mage.").color(NamedTextColor.GRAY));
+        rpgItem.itemLore = List.of(Component.text("A powerful mage.").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
         rpgItem.reqLevel = 0;
         rpgItem.reqClass = RPGClass.ANY;
         rpgItem.attack = 0;
@@ -64,7 +65,7 @@ public class ItemDictionary {
     public static RPGItem adventurerSword() {
         RPGItem rpgItem = new RPGItem();
         rpgItem.itemName = Component.text("Adventurer's Sword").color(NamedTextColor.WHITE);
-        rpgItem.itemLore = List.of(Component.text("Sword that every adventurer needs in their equipment! Quality assured!"));
+        rpgItem.itemLore = List.of(Component.text("Sword that every adventurer needs in their equipment! Quality assured!").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
         rpgItem.reqLevel = 1;
         rpgItem.reqClass = RPGClass.WARRIOR;
         rpgItem.attack = 6;
@@ -72,7 +73,14 @@ public class ItemDictionary {
         rpgItem.defense = 10;
         rpgItem.health = 0;
         rpgItem.speed = 0;
-        rpgItem.slotReq = -1; // -1 means any slot (i hope players aren't going to put it in their offhand)
+        rpgItem.slotReq = -1; // Any because for some reason off hand is weird
+        // -1 = ANY
+        // 0 = Main Hand
+        // 1 = Helmet
+        // 2 = Chestplate
+        // 3 = Leggings
+        // 4 = Boots
+        // 5 = Off Hand
         rpgItem.material = Material.IRON_SWORD;
         return rpgItem;
     }

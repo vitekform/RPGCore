@@ -18,6 +18,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
@@ -49,11 +50,18 @@ public final class RPGCore extends JavaPlugin {
     public static List<Component> fancyText(List<Component> original) {
         List<String> lines = new java.util.ArrayList<>();
         List<TextColor> colors = new java.util.ArrayList<>();
+        List<Map<TextDecoration, TextDecoration.State>> decorations = new java.util.ArrayList<>();
         List<String> nLines = new java.util.ArrayList<>();
         for (Component c : original) {
             String plainText = PlainTextComponentSerializer.plainText().serialize(c);
             lines.add(plainText);
             colors.add(c.color());
+            if (!c.decorations().isEmpty()) {
+                decorations.add(c.decorations());
+            }
+            else {
+                decorations.add(Map.of(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+            }
         }
 
         for (String s : lines) {
@@ -151,7 +159,7 @@ public final class RPGCore extends JavaPlugin {
         }
         List<Component> nComponents = new java.util.ArrayList<>();
         for (int i = 0; i < nLines.size(); i++) {
-            nComponents.add(Component.text(nLines.get(i), colors.get(i)));
+            nComponents.add(Component.text(nLines.get(i), colors.get(i)).decorations(decorations.get(i)));
         }
         return nComponents;
     }
@@ -265,6 +273,12 @@ public final class RPGCore extends JavaPlugin {
                 } else {
                     ctx.getSource().getSender().sendMessage(Component.text("This command can only be used by players.", NamedTextColor.RED));
                 }
+            }
+            else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.TEST)) {
+                Player p = (Player) ctx.getSource().getSender();
+                RPGPlayer pl = playerStorage.get(p.getUniqueId());
+                pl.updateItemStats();
+                p.sendMessage(Component.text("Your stats have been updated.", NamedTextColor.GREEN));
             }
             else {
                 ctx.getSource().getSender().sendMessage(Component.text("Unknown subcommand.", NamedTextColor.RED));

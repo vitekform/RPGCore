@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class InventoryHandler implements Listener {
 
@@ -31,12 +32,8 @@ public class InventoryHandler implements Listener {
             }
             if (event.getInventory().getHolder() instanceof Player) {
                 // It is player inventory
-                if (event.getSlot() >= 36 && event.getSlot() <= 40) {
-                    // It is armor or offhand
-                    System.out.println("Armor attempt: " + event.getSlot());
-                    RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
-                    rpgp.updateItemStats();
-                }
+                RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
+                rpgp.updateItemStats();
             }
         }
     }
@@ -49,9 +46,17 @@ public class InventoryHandler implements Listener {
     }
 
     @EventHandler
-    public void whenPlayerChangesItemInMainhand(PlayerItemHeldEvent event) {
+    public void whenPlayerSwitchMainItem(PlayerItemHeldEvent event) {
         Player p = event.getPlayer();
         RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
         rpgp.updateItemStats();
+
+        // Update the player's stats after switching items
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                rpgp.updateItemStats();
+            }
+        }.runTaskLater(RPGCore.getPlugin(RPGCore.class), 1L); // Delay to ensure the item switch is processed
     }
 }
