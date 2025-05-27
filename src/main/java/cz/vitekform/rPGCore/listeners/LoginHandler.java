@@ -1,6 +1,7 @@
 package cz.vitekform.rPGCore.listeners;
 
 import cz.vitekform.rPGCore.RPGCore;
+import cz.vitekform.rPGCore.objects.RPGAttribute;
 import cz.vitekform.rPGCore.objects.RPGClass;
 import cz.vitekform.rPGCore.objects.RPGPlayer;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,6 +12,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class LoginHandler implements Listener {
 
@@ -37,13 +39,36 @@ public class LoginHandler implements Listener {
             int maxMana = data.getInt("player." + p.getUniqueId() + ".maxMana");
             int mana = data.getInt("player." + p.getUniqueId() + ".mana");
             String rpgClass = data.getString("player." + p.getUniqueId() + ".rpgClass");
-            RPGPlayer rpgp = new RPGPlayer(p.getUniqueId(), p.getName(), rpgName, level, exp, maxExp, skillPoints, strength, dexterity, intelligence, vitality, endurance, totalSkillPoints, attributePoints, maxHealth, health, maxMana, mana, RPGClass.valueOf(rpgClass), 0, defense);
+            RPGPlayer rpgp = new RPGPlayer(p.getUniqueId());
+            rpgp.rpgName = rpgName;
+            rpgp.level = level;
+            rpgp.exp = exp;
+            rpgp.maxExp = maxExp;
+            rpgp.defense_Base = defense;
+            rpgp.skillPoints = skillPoints;
+            rpgp.baseAttributes = new HashMap<>();
+            rpgp.itemAttributes = new HashMap<>();
+            rpgp.baseAttributes.put(RPGAttribute.STRENGTH, strength);
+            rpgp.baseAttributes.put(RPGAttribute.DEXTERITY, dexterity);
+            rpgp.baseAttributes.put(RPGAttribute.INTELLIGENCE, intelligence);
+            rpgp.baseAttributes.put(RPGAttribute.VITALITY, vitality);
+            rpgp.baseAttributes.put(RPGAttribute.ENDURANCE, endurance);
+            rpgp.totalSkillPoints = totalSkillPoints;
+            rpgp.attributePoints = attributePoints;
+            rpgp.maxHealth_Base = maxHealth;
+            rpgp.health = health;
+            rpgp.maxMana_Base = maxMana;
+            rpgp.mana = mana;
+            rpgp.rpgClass = RPGClass.valueOf(rpgClass);
+            rpgp.updateItemStats();
             RPGCore.playerStorage.put(p.getUniqueId(), rpgp);
         }
         else {
             RPGPlayer rpgp = new RPGPlayer(p.getUniqueId());
             rpgp.rpgClass = RPGClass.NONE;
-            rpgp.maxHealth = 1D;
+            rpgp.maxHealth_Base = 1D;
+            rpgp.baseAttributes = new HashMap<>();
+            rpgp.itemAttributes = new HashMap<>();
             rpgp.health = 1D;
             RPGCore.playerStorage.put(p.getUniqueId(), rpgp);
         }
@@ -61,16 +86,16 @@ public class LoginHandler implements Listener {
         data.set("player." + p.getUniqueId() + ".exp", rpgp.exp);
         data.set("player." + p.getUniqueId() + ".maxExp", rpgp.maxExp);
         data.set("player." + p.getUniqueId() + ".skillPoints", rpgp.skillPoints);
-        data.set("player." + p.getUniqueId() + ".strength", rpgp.strength);
-        data.set("player." + p.getUniqueId() + ".dexterity", rpgp.dexterity);
-        data.set("player." + p.getUniqueId() + ".intelligence", rpgp.intelligence);
-        data.set("player." + p.getUniqueId() + ".vitality", rpgp.vitality);
-        data.set("player." + p.getUniqueId() + ".endurance", rpgp.endurance);
+        data.set("player." + p.getUniqueId() + ".strength", rpgp.baseAttributes.get(RPGAttribute.STRENGTH));
+        data.set("player." + p.getUniqueId() + ".dexterity", rpgp.baseAttributes.get(RPGAttribute.DEXTERITY));
+        data.set("player." + p.getUniqueId() + ".intelligence", rpgp.baseAttributes.get(RPGAttribute.INTELLIGENCE));
+        data.set("player." + p.getUniqueId() + ".vitality", rpgp.baseAttributes.get(RPGAttribute.VITALITY));
+        data.set("player." + p.getUniqueId() + ".endurance", rpgp.baseAttributes.get(RPGAttribute.ENDURANCE));
         data.set("player." + p.getUniqueId() + ".totalSkillPoints", rpgp.totalSkillPoints);
         data.set("player." + p.getUniqueId() + ".attributePoints", rpgp.attributePoints);
-        data.set("player." + p.getUniqueId() + ".maxHealth", rpgp.maxHealth);
+        data.set("player." + p.getUniqueId() + ".maxHealth", rpgp.maxHealth_Base);
         data.set("player." + p.getUniqueId() + ".health", rpgp.health);
-        data.set("player." + p.getUniqueId() + ".maxMana", rpgp.maxMana);
+        data.set("player." + p.getUniqueId() + ".maxMana", rpgp.maxMana_Base);
         data.set("player." + p.getUniqueId() + ".mana", rpgp.mana);
         data.set("player." + p.getUniqueId() + ".rpgClass", rpgp.rpgClass.toString());
         RPGCore.playerStorage.remove(p.getUniqueId());

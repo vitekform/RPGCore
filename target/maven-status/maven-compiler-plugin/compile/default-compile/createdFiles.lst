@@ -11,5 +11,6 @@ cz\vitekform\rPGCore\commands\args\classes\RPGCoreSubcommandArgument.class
 cz\vitekform\rPGCore\RPGCore.class
 cz\vitekform\rPGCore\commands\args\enums\RPGCoreSubcommand.class
 cz\vitekform\rPGCore\listeners\InventoryHandler.class
+cz\vitekform\rPGCore\objects\RPGAttribute.class
 cz\vitekform\rPGCore\pluginUtils\PluginUpdater$1.class
 cz\vitekform\rPGCore\pluginUtils\PluginUpdater.class

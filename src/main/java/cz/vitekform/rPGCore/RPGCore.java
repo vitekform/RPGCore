@@ -7,6 +7,7 @@ import cz.vitekform.rPGCore.commands.args.enums.RPGCoreSubcommand;
 import cz.vitekform.rPGCore.listeners.InventoryHandler;
 import cz.vitekform.rPGCore.listeners.LoginHandler;
 import cz.vitekform.rPGCore.listeners.PlayerDamageHandler;
+import cz.vitekform.rPGCore.objects.RPGAttribute;
 import cz.vitekform.rPGCore.objects.RPGClass;
 import cz.vitekform.rPGCore.objects.RPGPlayer;
 import cz.vitekform.rPGCore.pluginUtils.PluginUpdater;
@@ -252,6 +253,19 @@ public final class RPGCore extends JavaPlugin {
                     ctx.getSource().getSender().sendMessage(Component.text("/rpgcore " + entry.getKey() + " - ", NamedTextColor.GRAY).append(entry.getValue()));
                 }
             }
+            else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.GIVE)) {
+                if (ctx.getSource().getSender() instanceof Player p) {
+                    RPGPlayer pl = playerStorage.get(p.getUniqueId());
+                    if (pl != null) {
+                        pl.giveItem(ItemDictionary.adventurerSword());
+                        ctx.getSource().getSender().sendMessage(Component.text("You have been given an Adventurer's Sword!", NamedTextColor.GREEN));
+                    } else {
+                        ctx.getSource().getSender().sendMessage(Component.text("You are not a registered RPG player.", NamedTextColor.RED));
+                    }
+                } else {
+                    ctx.getSource().getSender().sendMessage(Component.text("This command can only be used by players.", NamedTextColor.RED));
+                }
+            }
             else {
                 ctx.getSource().getSender().sendMessage(Component.text("Unknown subcommand.", NamedTextColor.RED));
             }
@@ -277,14 +291,14 @@ public final class RPGCore extends JavaPlugin {
 
     public static void syncDataWithReality(Player p) {
         RPGPlayer pl = playerStorage.get(p.getUniqueId());
-        pl.maxHealth = pl.endurance * 10;
-        if (pl.maxHealth == 0) {
-            pl.maxHealth = 1;
+        pl.maxHealth_Base = pl.totalAttributes().get(RPGAttribute.ENDURANCE) * 10;
+        if (pl.maxHealth_Base == 0) {
+            pl.maxHealth_Base = 1;
         }
-        if (pl.health > pl.maxHealth) {
-            pl.health = pl.maxHealth;
+        if (pl.health > pl.maxHealth_Base + pl.health_Items) {
+            pl.health = pl.maxHealth_Base + pl.health_Items;
         }
-        pl.maxMana = pl.intelligence * 10;
+        pl.maxMana_Base = pl.totalAttributes().get(RPGAttribute.INTELLIGENCE) * 10;
 
         playerStatsCycleStart(pl);
     }
@@ -296,14 +310,14 @@ public final class RPGCore extends JavaPlugin {
         new BukkitRunnable() {
             @Override
             public void run() {
-                double maxHealth = p.maxHealth;
+                double maxHealth = p.maxHealth_Base + p.health_Items;
                 double health = p.health;
-                int maxMana = p.maxMana;
+                int maxMana = p.maxMana_Base + p.mana_Items;
                 int mana = p.mana;
                 int level = p.level;
                 int exp = p.exp;
                 int maxExp = p.maxExp;
-                int defense = p.defense;
+                int defense = p.defense_Base + p.defense_Items;
 
                 double healthFactor = health / maxHealth;
 
