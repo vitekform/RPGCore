@@ -7,9 +7,9 @@ public enum RPGCoreSubcommand {
     HELP,
     UPDATE,
     VERSION,
-    GIVE,
     SUMMON,
-    TEST;
+    TEST,
+    KIT_ADVENTURER;
 
     public @NotNull String permission(RPGCoreSubcommand subcommand) {
         return "rpgcore." + subcommand.name().toLowerCase();

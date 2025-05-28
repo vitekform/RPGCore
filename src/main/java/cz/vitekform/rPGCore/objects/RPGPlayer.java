@@ -64,6 +64,25 @@ public class RPGPlayer {
         }
     }
 
+    public void giveItem(RPGItem item, int amount) {
+        // Check if player has enough space in inventory
+        Player player = Bukkit.getPlayer(uuid);
+        Inventory inventory = player.getInventory();
+        if (inventory.firstEmpty() == -1) {
+            player.sendMessage("You didn't have enough space in your inventory to receive this item! Instead it was dropped on the ground.");
+            player.getWorld().dropItemNaturally(player.getLocation(), item.build(amount));
+            return;
+        }
+        // Add item to inventory
+        ItemStack itemStack = item.build(amount);
+        if (itemStack != null) {
+            inventory.addItem(itemStack);
+            player.sendMessage("You received: " + item.itemName + " x" + amount);
+        } else {
+            player.sendMessage("Failed to create item: " + item.itemName);
+        }
+    }
+
     public int totalSkillPoints;
     public int attributePoints;
     public int totalAttributePoints;

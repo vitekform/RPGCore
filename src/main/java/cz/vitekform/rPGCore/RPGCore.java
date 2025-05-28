@@ -4,10 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import cz.vitekform.rPGCore.commands.args.classes.RPGCoreSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.enums.RPGCoreSubcommand;
-import cz.vitekform.rPGCore.listeners.EntityDamageHandler;
-import cz.vitekform.rPGCore.listeners.InventoryHandler;
-import cz.vitekform.rPGCore.listeners.LoginHandler;
-import cz.vitekform.rPGCore.listeners.PlayerDamageHandler;
+import cz.vitekform.rPGCore.listeners.*;
 import cz.vitekform.rPGCore.objects.*;
 import cz.vitekform.rPGCore.pluginUtils.PluginUpdater;
 import io.papermc.paper.command.brigadier.Commands;
@@ -233,6 +230,7 @@ public final class RPGCore extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new LoginHandler(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerDamageHandler(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDamageHandler(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerEatFoodHandler(), this);
 
         // Load entity data
         FileConfiguration entityData = safeGetConfig("entityData.yml");
@@ -330,12 +328,17 @@ public final class RPGCore extends JavaPlugin {
                     ctx.getSource().getSender().sendMessage(Component.text("/rpgcore " + entry.getKey() + " - ", NamedTextColor.GRAY).append(entry.getValue()));
                 }
             }
-            else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.GIVE)) {
+            else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.KIT_ADVENTURER)) {
                 if (ctx.getSource().getSender() instanceof Player p) {
                     RPGPlayer pl = playerStorage.get(p.getUniqueId());
                     if (pl != null) {
                         pl.giveItem(ItemDictionary.adventurerSword());
-                        ctx.getSource().getSender().sendMessage(Component.text("You have been given an Adventurer's Sword!", NamedTextColor.GREEN));
+                        pl.giveItem(ItemDictionary.adventurerHelmet());
+                        pl.giveItem(ItemDictionary.adventurerChestplate());
+                        pl.giveItem(ItemDictionary.adventurerLeggings());
+                        pl.giveItem(ItemDictionary.adventurerBoots());
+                        pl.giveItem(ItemDictionary.staleBread(), 5);
+                        ctx.getSource().getSender().sendMessage(Component.text("You have been given an Adventurer's kit!", NamedTextColor.GREEN));
                     } else {
                         ctx.getSource().getSender().sendMessage(Component.text("You are not a registered RPG player.", NamedTextColor.RED));
                     }
@@ -410,21 +413,68 @@ public final class RPGCore extends JavaPlugin {
         new BukkitRunnable() {
             @Override
             public void run() {
+                if (!pl.isOnline() || !playerStorage.containsKey(pl.getUniqueId())) {
+                    this.cancel();
+                    return;
+                }
                 double maxHealth = p.maxHealth_Base + p.health_Items;
                 double health = p.health;
+
+                if (health > maxHealth) {
+                    health = maxHealth; // Ensure health does not exceed max health
+                }
+
                 int maxMana = p.maxMana_Base + p.mana_Items;
                 int mana = p.mana;
-                int level = p.level;
-                int exp = p.exp;
-                int maxExp = p.maxExp;
+
+                if (mana > maxMana) {
+                    mana = maxMana; // Ensure mana does not exceed max mana
+                }
+
                 int defense = p.defense_Base + p.defense_Items;
 
                 double healthFactor = health / maxHealth;
 
+                if (healthFactor * 40 > 40) {
+                    // We got a problem!
+                    healthFactor = 1.0;
+                }
                 pl.setHealth(healthFactor * 40);
 
                 pl.sendActionBar(Component.text(ChatColor.RED + "❤ " + health + "/" + maxHealth + "  " + ChatColor.BLUE + "✦ " + mana + "/" + maxMana + "  " + ChatColor.GREEN + "\uD83D\uDEE1 " + defense, NamedTextColor.WHITE));
             }
         }.runTaskTimer(RPGCore.getPlugin(RPGCore.class), 10, 5);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (pl.isOnline()) {
+                    // Get regeneration factor
+                    double regenFactor = p.totalAttributes().get(RPGAttribute.VITALITY);
+                    if (regenFactor < 1) {
+                        regenFactor = 1;
+                    }
+                    if (pl.getFoodLevel() > 15) {
+                        if (p.health < p.maxHealth_Base + p.health_Items) {
+                            p.health += regenFactor;
+                            if (p.health > p.maxHealth_Base + p.health_Items) {
+                                p.health = p.maxHealth_Base + p.health_Items;
+                            }
+                        }
+                    }
+                    // Regenrate mana
+                    if (pl.getFoodLevel() > 15) {
+                        if (p.mana < p.maxMana_Base + p.mana_Items) {
+                            p.mana += (int) regenFactor;
+                            if (p.mana > p.maxMana_Base + p.mana_Items) {
+                                p.mana = p.maxMana_Base + p.mana_Items;
+                            }
+                        }
+                    }
+                } else {
+                    this.cancel();
+                }
+            }
+        }.runTaskTimer(RPGCore.getPlugin(RPGCore.class), 10, 20);
     }
 }

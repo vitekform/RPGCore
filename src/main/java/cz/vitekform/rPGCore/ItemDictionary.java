@@ -1,6 +1,7 @@
 package cz.vitekform.rPGCore;
 
 import cz.vitekform.rPGCore.objects.RPGClass;
+import cz.vitekform.rPGCore.objects.RPGFoodItem;
 import cz.vitekform.rPGCore.objects.RPGItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -83,6 +84,93 @@ public class ItemDictionary {
         // 5 = Off Hand
         rpgItem.material = Material.IRON_SWORD;
         rpgItem.critChance = 15.0; // 15% crit chance
+        return rpgItem;
+    }
+
+    public static RPGItem adventurerHelmet() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Adventurer's Helmet").color(NamedTextColor.WHITE);
+        rpgItem.itemLore = List.of(Component.text("Helmet that every adventurer needs! Guaranteed to protect your head against weather I guess.").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        rpgItem.reqLevel = 1;
+        rpgItem.reqClass = RPGClass.WARRIOR;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 1;
+        rpgItem.health = 5;
+        rpgItem.speed = 0;
+        rpgItem.slotReq = 1; // Helmet
+        rpgItem.material = Material.LEATHER_HELMET;
+        rpgItem.critChance = 0.0; // No crit chance for helmet
+        return rpgItem;
+    }
+
+    public static RPGItem adventurerChestplate() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Adventurer's Chestplate").color(NamedTextColor.WHITE);
+        rpgItem.itemLore = List.of(Component.text("Chestplate that every adventurer needs! Guaranteed to protect your chest against something... You will probably find out what it is for").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        rpgItem.reqLevel = 1;
+        rpgItem.reqClass = RPGClass.WARRIOR;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 3;
+        rpgItem.health = 10;
+        rpgItem.speed = 0;
+        rpgItem.slotReq = 2; // Chestplate
+        rpgItem.material = Material.LEATHER_CHESTPLATE;
+        rpgItem.critChance = 0.0; // No crit chance for chestplate
+        return rpgItem;
+    }
+
+    public static RPGItem adventurerLeggings() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Adventurer's Leggings").color(NamedTextColor.WHITE);
+        rpgItem.itemLore = List.of(Component.text("Leggings that every adventurer needs! Guaranteed to protect your legs and other parts against cold? I hope...").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        rpgItem.reqLevel = 1;
+        rpgItem.reqClass = RPGClass.WARRIOR;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 2;
+        rpgItem.health = 7;
+        rpgItem.speed = 0;
+        rpgItem.slotReq = 3; // Leggings
+        rpgItem.material = Material.LEATHER_LEGGINGS;
+        rpgItem.critChance = 0.0; // No crit chance for leggings
+        return rpgItem;
+    }
+
+    public static RPGItem adventurerBoots() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Adventurer's Boots").color(NamedTextColor.WHITE);
+        rpgItem.itemLore = List.of(Component.text("Boots that every adventurer needs! Guaranteed to protect your feet against trench foot").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        rpgItem.reqLevel = 1;
+        rpgItem.reqClass = RPGClass.WARRIOR;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 1;
+        rpgItem.health = 3;
+        rpgItem.speed = 0;
+        rpgItem.slotReq = 4; // Boots
+        rpgItem.material = Material.LEATHER_BOOTS;
+        rpgItem.critChance = 0.0; // No crit chance for boots
+        return rpgItem;
+    }
+
+    public static RPGFoodItem staleBread() {
+        RPGFoodItem rpgItem = new RPGFoodItem();
+        rpgItem.itemName = Component.text("Stale Bread").color(NamedTextColor.WHITE);
+        rpgItem.itemLore = List.of(Component.text("A piece of stale bread. Not very tasty, but it will fill your stomach.").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+        rpgItem.reqLevel = 0;
+        rpgItem.reqClass = RPGClass.ANY;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 0;
+        rpgItem.health = 0;
+        rpgItem.speed = 0;
+        rpgItem.slotReq = -1; // Any
+        rpgItem.material = Material.BREAD;
+        rpgItem.foodAmount = 2; // Restores 2 hunger points
+        rpgItem.saturationAmount = 0.4f; // Restores 0.4 saturation points
+        rpgItem.critChance = 0.0; // No crit chance for food
         return rpgItem;
     }
 }
