@@ -38,6 +38,8 @@ public class LoginHandler implements Listener {
             double health = data.getInt("player." + p.getUniqueId() + ".health");
             int maxMana = data.getInt("player." + p.getUniqueId() + ".maxMana");
             int mana = data.getInt("player." + p.getUniqueId() + ".mana");
+            double baseSpeed = data.getDouble("player." + p.getUniqueId() + ".speed_Base", 0.1D); // Default speed if not set
+            double critChance = data.getDouble("player." + p.getUniqueId() + ".critChance", 0D); // Default crit chance if not set
             String rpgClass = data.getString("player." + p.getUniqueId() + ".rpgClass");
             RPGPlayer rpgp = new RPGPlayer(p.getUniqueId());
             rpgp.rpgName = rpgName;
@@ -60,6 +62,8 @@ public class LoginHandler implements Listener {
             rpgp.maxMana_Base = maxMana;
             rpgp.mana = mana;
             rpgp.rpgClass = RPGClass.valueOf(rpgClass);
+            rpgp.speed_Base = baseSpeed;
+            rpgp.critChance_Base = critChance;
             rpgp.updateItemStats();
             RPGCore.playerStorage.put(p.getUniqueId(), rpgp);
         }
@@ -68,9 +72,11 @@ public class LoginHandler implements Listener {
             rpgp.rpgClass = RPGClass.NONE;
             rpgp.maxHealth_Base = 1D;
             rpgp.level = 1;
+            rpgp.speed_Base = 0.1D;
             rpgp.baseAttributes = new HashMap<>();
             rpgp.itemAttributes = new HashMap<>();
             rpgp.health = 1D;
+            rpgp.critChance_Base = 0D;
             RPGCore.playerStorage.put(p.getUniqueId(), rpgp);
         }
         RPGCore.syncDataWithReality(p);
@@ -99,6 +105,8 @@ public class LoginHandler implements Listener {
         data.set("player." + p.getUniqueId() + ".maxMana", rpgp.maxMana_Base);
         data.set("player." + p.getUniqueId() + ".mana", rpgp.mana);
         data.set("player." + p.getUniqueId() + ".rpgClass", rpgp.rpgClass.toString());
+        data.set("player." + p.getUniqueId() + ".speed_Base", rpgp.speed_Base);
+        data.set("player." + p.getUniqueId() + ".critChance", rpgp.critChance_Base);
         RPGCore.playerStorage.remove(p.getUniqueId());
 
         try {

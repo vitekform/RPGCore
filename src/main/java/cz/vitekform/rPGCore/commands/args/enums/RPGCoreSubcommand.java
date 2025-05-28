@@ -8,6 +8,7 @@ public enum RPGCoreSubcommand {
     UPDATE,
     VERSION,
     GIVE,
+    SUMMON,
     TEST;
 
     public @NotNull String permission(RPGCoreSubcommand subcommand) {

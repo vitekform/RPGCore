@@ -28,22 +28,10 @@ public class RPGItem {
     public int health;
     public double speed;
     public int mana;
+    public double critChance;
 
     public int slotReq;
     public Material material;
-    public RPGItem(Component itemName, int reqLevel, RPGClass reqClass, int attack, int attackSpeed, int defense, int health, int speed, int slotReq) {
-        this.itemName = itemName;
-        this.itemLore = new ArrayList<>();
-        this.reqLevel = reqLevel;
-        this.reqClass = reqClass;
-        this.attack = attack;
-        this.attackSpeed = attackSpeed;
-        this.defense = defense;
-        this.health = health;
-        this.speed = speed;
-        this.material = Material.PAPER;
-        this.slotReq = slotReq;
-    }
 
     public RPGItem() {
         this.itemName = Component.newline();
@@ -55,6 +43,7 @@ public class RPGItem {
         this.defense = 0;
         this.health = 0;
         this.speed = 0;
+        this.critChance = 0;
         this.slotReq = -1; // Any
         this.material = Material.PAPER;
     }
@@ -77,6 +66,9 @@ public class RPGItem {
         }
         if (attackSpeed > 0) {
             lore.add(Component.text("Attack Speed: " + attackSpeed).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GRAY));
+        }
+        if (critChance > 0) {
+            lore.add(Component.text("Critical Chance: " + critChance + "%").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.LIGHT_PURPLE));
         }
         if (defense > 0) {
             lore.add(Component.text("Defense: " + defense).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GREEN));
@@ -118,6 +110,7 @@ public class RPGItem {
         NamespacedKey key_speed = new NamespacedKey("rpgcore", "rpg_item_speed");
         NamespacedKey key_mana = new NamespacedKey("rpgcore", "rpg_item_mana");
         NamespacedKey key_slot = new NamespacedKey("rpgcore", "rpg_item_slot");
+        NamespacedKey key_crit_chance = new NamespacedKey("rpgcore", "rpg_item_crit_chance");
 
         PersistentDataContainer pdc = im.getPersistentDataContainer();
         pdc.set(key_class, PersistentDataType.STRING, reqClass.name());
@@ -129,7 +122,7 @@ public class RPGItem {
         pdc.set(key_speed, PersistentDataType.DOUBLE, speed);
         pdc.set(key_mana, PersistentDataType.INTEGER, mana);
         pdc.set(key_slot, PersistentDataType.INTEGER, slotReq);
-
+        pdc.set(key_crit_chance, PersistentDataType.DOUBLE, critChance);
 
         i.setItemMeta(im);
 

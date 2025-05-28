@@ -69,11 +69,11 @@ public class ItemDictionary {
         rpgItem.reqLevel = 1;
         rpgItem.reqClass = RPGClass.WARRIOR;
         rpgItem.attack = 6;
-        rpgItem.attackSpeed = 1.6;
-        rpgItem.defense = 10;
+        rpgItem.attackSpeed = 1.6; // Normal attack speed
+        rpgItem.defense = 0;
         rpgItem.health = 0;
         rpgItem.speed = 0;
-        rpgItem.slotReq = -1; // Any because for some reason off hand is weird
+        rpgItem.slotReq = -1; // Any because for some reason off hand is broken (or I can't just figure out how the f*** it works)
         // -1 = ANY
         // 0 = Main Hand
         // 1 = Helmet
@@ -82,6 +82,7 @@ public class ItemDictionary {
         // 4 = Boots
         // 5 = Off Hand
         rpgItem.material = Material.IRON_SWORD;
+        rpgItem.critChance = 15.0; // 15% crit chance
         return rpgItem;
     }
 }
