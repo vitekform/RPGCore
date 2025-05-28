@@ -1,6 +1,7 @@
 package cz.vitekform.rPGCore.pluginUtils;
 
 import com.google.gson.JsonObject;
+import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.ReleaseChannel;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -13,7 +14,7 @@ import java.nio.file.Paths;
 public class PluginUpdater {
 
     public static final String pluginVersion = "0.0.1";
-    public static final int build = 4;
+    public static final int build = 8;
     private static final ReleaseChannel releaseChannel = ReleaseChannel.DEV;
 
     public static int latestBuild(String channel) {
