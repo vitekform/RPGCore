@@ -15,14 +15,13 @@ public class PlayerDamageHandler implements Listener {
     public void whenEntityDamageEvent(EntityDamageEvent event) {
         if (event.getEntity() instanceof LivingEntity le) {
             if (le instanceof Player p) {
-                double dmg = event.getDamage() * 10;
+                double dmg = event.getDamage();
                 int d = ((int) dmg - RPGCore.playerStorage.get(p.getUniqueId()).defense_Base + RPGCore.playerStorage.get(p.getUniqueId()).defense_Items);
                 System.out.println(d);
                 RPGCore.playerStorage.get(p.getUniqueId()).health -= d;
 
                 if (RPGCore.playerStorage.get(p.getUniqueId()).health <= 0) {
                     p.setHealth(0);
-                    System.out.println("death");
                 }
                 else {
                     RPGPlayer rp = RPGCore.playerStorage.get(p.getUniqueId());

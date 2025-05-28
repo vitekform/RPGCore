@@ -129,6 +129,12 @@ public class RPGItem {
         return i;
     }
 
+    public ItemStack build(int amount) {
+        ItemStack itemStack = build();
+        itemStack.setAmount(amount);
+        return itemStack;
+    }
+
     private String getNormalName(RPGClass rpgClass) {
         return rpgClass.toString().substring(0, 1).toUpperCase() + rpgClass.toString().substring(1).toLowerCase();
     }
