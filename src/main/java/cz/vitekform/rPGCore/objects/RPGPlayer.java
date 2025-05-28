@@ -32,6 +32,8 @@ public class RPGPlayer {
     public int skillPoints;
     public Map<RPGAttribute, Integer> baseAttributes;
     public Map<RPGAttribute, Integer> itemAttributes;
+    public double critChance_Base;
+    public double critChance_Items;
 
     public Map<RPGAttribute, Integer> totalAttributes() {
         return Map.of(
@@ -135,6 +137,7 @@ public class RPGPlayer {
         NamespacedKey key_speed = new NamespacedKey("rpgcore", "rpg_item_speed");
         NamespacedKey key_mana = new NamespacedKey("rpgcore", "rpg_item_mana");
         NamespacedKey key_slot = new NamespacedKey("rpgcore", "rpg_item_slot");
+        NamespacedKey key_crit_chance = new NamespacedKey("rpgcore", "rpg_item_crit_chance");
 
         // Calculate all stats from valid items
         for (ItemStack is : itemsToCount) {
@@ -188,6 +191,7 @@ public class RPGPlayer {
                             health_Items += pdc.getOrDefault(key_health, PersistentDataType.INTEGER, 0);
                             speed_Items += pdc.getOrDefault(key_speed, PersistentDataType.DOUBLE, 0D);
                             mana_Items += pdc.getOrDefault(key_mana, PersistentDataType.INTEGER, 0);
+                            critChance_Items += pdc.getOrDefault(key_crit_chance, PersistentDataType.DOUBLE, 0D);
                         } else {
                             p.sendMessage(Component.text("You cannot equip " + is.getItemMeta().displayName() + " in this slot!").color(NamedTextColor.RED));
                         }
@@ -206,13 +210,22 @@ public class RPGPlayer {
             handMeta.removeAttributeModifier(Attribute.ATTACK_SPEED);
             handMeta.removeAttributeModifier(Attribute.ATTACK_DAMAGE);
             handMeta.addAttributeModifier(Attribute.ATTACK_SPEED,
-                    new AttributeModifier(UUID.randomUUID(), "rpgcore.attack_speed",
-                            attackSPD_Items + attackSPD_Base, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND));
+                    new AttributeModifier(new NamespacedKey("rpgcore", "attack_speed"),
+                            attackSPD_Items + attackSPD_Base, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND.getGroup()));
             // Set attack damage to 0 since it's handled by your system
             handMeta.addAttributeModifier(Attribute.ATTACK_DAMAGE,
-                    new AttributeModifier(UUID.randomUUID(), "rpgcore.attack_damage",
-                            0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND));
+                    new AttributeModifier(new NamespacedKey("rpgcore", "attack_damage"),
+                            0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.HAND.getGroup()));
             handItem.setItemMeta(handMeta);
         }
+
+        double totalSpeed = speed_Base + speed_Items;
+        p.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(totalSpeed);
+    }
+
+    public void handleExpAdd(int experienceAfterDefeat) {
+        this.exp += experienceAfterDefeat;
+        // To DO:
+        // Check if player has enough experience to level up
     }
 }

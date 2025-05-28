@@ -4,12 +4,11 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import cz.vitekform.rPGCore.commands.args.classes.RPGCoreSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.enums.RPGCoreSubcommand;
+import cz.vitekform.rPGCore.listeners.EntityDamageHandler;
 import cz.vitekform.rPGCore.listeners.InventoryHandler;
 import cz.vitekform.rPGCore.listeners.LoginHandler;
 import cz.vitekform.rPGCore.listeners.PlayerDamageHandler;
-import cz.vitekform.rPGCore.objects.RPGAttribute;
-import cz.vitekform.rPGCore.objects.RPGClass;
-import cz.vitekform.rPGCore.objects.RPGPlayer;
+import cz.vitekform.rPGCore.objects.*;
 import cz.vitekform.rPGCore.pluginUtils.PluginUpdater;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
@@ -21,12 +20,13 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -46,6 +46,7 @@ import java.util.UUID;
 public final class RPGCore extends JavaPlugin {
 
     public static final Map<UUID, RPGPlayer> playerStorage = new HashMap<>();
+    public static final Map<UUID, RPGEntity> entityStorage = new HashMap<>();
 
     public static List<Component> fancyText(List<Component> original) {
         List<String> lines = new java.util.ArrayList<>();
@@ -231,14 +232,82 @@ public final class RPGCore extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new InventoryHandler(), this);
         Bukkit.getPluginManager().registerEvents(new LoginHandler(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerDamageHandler(), this);
+        Bukkit.getPluginManager().registerEvents(new EntityDamageHandler(), this);
 
+        // Load entity data
+        FileConfiguration entityData = safeGetConfig("entityData.yml");
+        if (entityData.contains("entity")) {
+            for (String key : entityData.getConfigurationSection("entity").getKeys(false)) {
+                String path = "entity." + key + ".";
+                RPGEntity entity = new RPGEntity();
+                entity.visibleName = entityData.getString(path + "visibleName", "");
+                entity.level = entityData.getInt(path + "level", 1);
+                entity.maxHealth = entityData.getInt(path + "maxHealth", 20);
+                entity.health = entityData.getInt(path + "health", 20);
+                entity.attack = entityData.getDouble(path + "attack", 1.0);
+                entity.defense = entityData.getInt(path + "defense", 0);
+                entity.speed = entityData.getDouble(path + "speed", 0.1);
+                entity.experienceAfterDefeat = entityData.getInt(path + "experienceAfterDefeat", 0);
+                List<String> drops = entityData.getStringList(path + "drops");
+                for (String drop : drops) {
+                    if (ItemDictionary.items.containsKey(drop)) {
+                        entity.drops.add(ItemDictionary.items.get(drop));
+                    }
+                }
+                entity.isBoss = entityData.getBoolean(path + "isBoss", false);
+                entity.isFriendly = entityData.getBoolean(path + "isFriendly", false);
+                entity.hasVisibleName = entityData.getBoolean(path + "hasVisibleName", false);
+                UUID uuid = UUID.fromString(key);
+                entityStorage.put(uuid, entity);
+            }
+        }
         super.onEnable();
         getLogger().info(ChatColor.GREEN + "RPGCore Loaded!");
     }
 
     @Override
     public void onDisable() {
+        getLogger().info(ChatColor.YELLOW + "Disabling ganamaga's RPGCore...");
+        // Save entity data
+        FileConfiguration entityData = safeGetConfig("entityData.yml");
+        for (Map.Entry<UUID, RPGEntity> entry : entityStorage.entrySet()) {
+            RPGEntity entity = entry.getValue();
+            Entity nEntity = Bukkit.getEntity(entry.getKey());
+            Location loc = null;
+            if (nEntity != null && nEntity instanceof LivingEntity) {
+                loc = nEntity.getLocation();
+            } else {
+                getLogger().warning("Entity with UUID " + entry.getKey() + " not found in the world (This is most likely caused by natural despawn). Skipping saving its data.");
+            }
+            String path = "entity." + entry.getKey().toString() + ".";
+            entityData.set(path + "visibleName", entity.visibleName);
+            entityData.set(path + "level", entity.level);
+            entityData.set(path + "maxHealth", entity.maxHealth);
+            entityData.set(path + "health", entity.health);
+            entityData.set(path + "attack", entity.attack);
+            entityData.set(path + "defense", entity.defense);
+            entityData.set(path + "speed", entity.speed);
+            entityData.set(path + "experienceAfterDefeat", entity.experienceAfterDefeat);
+            // Save drops
+            List<String> drops = new java.util.ArrayList<>();
+            for (RPGItem drop : entity.drops) {
+                drops.add(drop.itemName.toString());
+            }
+            entityData.set(path + "drops", drops);
+            entityData.set(path + "isBoss", entity.isBoss);
+            entityData.set(path + "isFriendly", entity.isFriendly);
+            entityData.set(path + "hasVisibleName", entity.hasVisibleName);
+            if (entity.entityType != null) {
+                entityData.set(path + "entityType", entity.entityType.name());
+            }
+        }
+        try {
+            entityData.save(new File(getDataFolder(), "entityData.yml"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         super.onDisable();
+        getLogger().info(ChatColor.RED + "RPGCore Disabled!");
     }
 
     private void handleMainCommand(final CommandContext<io.papermc.paper.command.brigadier.CommandSourceStack> ctx, RPGCore plugin) {
@@ -267,6 +336,23 @@ public final class RPGCore extends JavaPlugin {
                     if (pl != null) {
                         pl.giveItem(ItemDictionary.adventurerSword());
                         ctx.getSource().getSender().sendMessage(Component.text("You have been given an Adventurer's Sword!", NamedTextColor.GREEN));
+                    } else {
+                        ctx.getSource().getSender().sendMessage(Component.text("You are not a registered RPG player.", NamedTextColor.RED));
+                    }
+                } else {
+                    ctx.getSource().getSender().sendMessage(Component.text("This command can only be used by players.", NamedTextColor.RED));
+                }
+            }
+            else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.SUMMON)) {
+                if (ctx.getSource().getSender() instanceof Player p) {
+                    RPGPlayer pl = playerStorage.get(p.getUniqueId());
+                    if (pl != null) {
+                        // Summon a test entity
+                        Location loc = p.getLocation();
+                        RPGEntity entity = EntityDictionary.BANDIT_TUTORIAL_MELEE();
+                        UUID uuid = entity.spawnIn(loc).getUniqueId();
+                        entityStorage.put(uuid, entity);
+                        ctx.getSource().getSender().sendMessage(Component.text("Test entity summoned!", NamedTextColor.GREEN));
                     } else {
                         ctx.getSource().getSender().sendMessage(Component.text("You are not a registered RPG player.", NamedTextColor.RED));
                     }
