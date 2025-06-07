@@ -155,6 +155,7 @@ public class ItemDictionary {
         return rpgItem;
     }
 
+    // For unknown reason the RPGFoodItem doesn't actually work (the handler is broken D:)
     public static RPGFoodItem staleBread() {
         RPGFoodItem rpgItem = new RPGFoodItem();
         rpgItem.itemName = Component.text("Stale Bread").color(NamedTextColor.WHITE);
