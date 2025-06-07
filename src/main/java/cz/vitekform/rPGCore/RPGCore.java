@@ -439,6 +439,9 @@ public final class RPGCore extends JavaPlugin {
                     // We got a problem!
                     healthFactor = 1.0;
                 }
+                if (healthFactor == 0) {
+                    healthFactor = 0.1; // Player is supposed to be dead, but since somehow it somewhere works (and i dont know why and it doesnt work as it should :D)
+                }
                 pl.setHealth(healthFactor * 40);
 
                 pl.sendActionBar(Component.text(ChatColor.RED + "❤ " + health + "/" + maxHealth + "  " + ChatColor.BLUE + "✦ " + mana + "/" + maxMana + "  " + ChatColor.GREEN + "\uD83D\uDEE1 " + defense, NamedTextColor.WHITE));

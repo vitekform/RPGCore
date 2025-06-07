@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 public class PluginUpdater {
 
     public static final String pluginVersion = "0.0.1";
-    public static final int build = 8;
+    public static final int build = 9;
     private static final ReleaseChannel releaseChannel = ReleaseChannel.DEV;
 
     public static int latestBuild(String channel) {
