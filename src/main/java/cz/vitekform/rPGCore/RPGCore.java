@@ -440,8 +440,9 @@ public final class RPGCore extends JavaPlugin {
                     healthFactor = 1.0;
                 }
                 if (healthFactor <= 0) {
-                    // Set minimum health factor to prevent invalid health values while player death is handled elsewhere
-                    healthFactor = 0.1;
+                    // death
+                    pl.setHealth(0);
+                    return;
                 }
                 pl.setHealth(healthFactor * 40);
 
