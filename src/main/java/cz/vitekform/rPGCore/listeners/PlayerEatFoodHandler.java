@@ -15,7 +15,13 @@ public class PlayerEatFoodHandler implements Listener {
         }
         if (i.getItemMeta().getPersistentDataContainer().has(new NamespacedKey("rpgcore", "is_food"))) {
             event.setCancelled(true); // Cancel the default eating behavior
-            i.setAmount(i.getAmount() - 1); // Consume one item
+
+            // Get the item from the player's inventory and consume it
+            ItemStack inventoryItem = event.getPlayer().getInventory().getItem(event.getPlayer().getInventory().getHeldItemSlot());
+            if (inventoryItem != null && !inventoryItem.getType().isAir()) {
+                inventoryItem.setAmount(inventoryItem.getAmount() - 1); // Consume one item
+            }
+
             int foodAmount = i.getItemMeta().getPersistentDataContainer()
                     .get(new NamespacedKey("rpgcore", "food_amount"), org.bukkit.persistence.PersistentDataType.INTEGER);
             float saturationAmount = i.getItemMeta().getPersistentDataContainer()
