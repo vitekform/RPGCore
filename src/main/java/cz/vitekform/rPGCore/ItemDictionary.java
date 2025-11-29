@@ -148,7 +148,7 @@ public class ItemDictionary {
         rpgItem.defense = 0;
         rpgItem.health = 0;
         rpgItem.speed = 0;
-        rpgItem.material = Material.GOLDEN_APPLE;
+        rpgItem.material = Material.SUNFLOWER;
         return rpgItem;
     }
 
