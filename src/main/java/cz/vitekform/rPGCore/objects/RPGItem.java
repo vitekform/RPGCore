@@ -28,6 +28,8 @@ public class RPGItem {
     public double speed;
     public int mana;
     public double critChance;
+    public int max_durability; // if -1 then it does not have a max durability
+    public int durability;
 
     public int slotReq;
     public Material material;
@@ -45,14 +47,61 @@ public class RPGItem {
         this.critChance = 0;
         this.slotReq = -1; // Any
         this.material = Material.PAPER;
+        this.durability = -1;
+        this.max_durability = -1;
     }
 
     public ItemStack build() {
+        if (max_durability > 0 && durability == -1) durability = max_durability;
         ItemStack i = new ItemStack(material);
         ItemMeta im = i.getItemMeta();
         itemName = RPGCore.fancyText(List.of(itemName.decorations(Map.of(TextDecoration.BOLD, TextDecoration.State.TRUE, TextDecoration.ITALIC, TextDecoration.State.FALSE)))).getFirst();
         im.displayName(itemName);
 
+        constructLore();
+        im.lore(itemLore);
+
+        NamespacedKey key_class = new NamespacedKey("rpgcore", "rpg_item_class");
+        NamespacedKey key_level = new NamespacedKey("rpgcore", "rpg_item_level");
+        NamespacedKey key_attack = new NamespacedKey("rpgcore", "rpg_item_attack");
+        NamespacedKey key_attack_speed = new NamespacedKey("rpgcore", "rpg_item_attack_speed");
+        NamespacedKey key_defense = new NamespacedKey("rpgcore", "rpg_item_defense");
+        NamespacedKey key_health = new NamespacedKey("rpgcore", "rpg_item_health");
+        NamespacedKey key_speed = new NamespacedKey("rpgcore", "rpg_item_speed");
+        NamespacedKey key_mana = new NamespacedKey("rpgcore", "rpg_item_mana");
+        NamespacedKey key_slot = new NamespacedKey("rpgcore", "rpg_item_slot");
+        NamespacedKey key_crit_chance = new NamespacedKey("rpgcore", "rpg_item_crit_chance");
+
+        PersistentDataContainer pdc = im.getPersistentDataContainer();
+        pdc.set(key_class, PersistentDataType.STRING, reqClass.name());
+        pdc.set(key_level, PersistentDataType.INTEGER, reqLevel);
+        pdc.set(key_attack, PersistentDataType.DOUBLE, attack);
+        pdc.set(key_attack_speed, PersistentDataType.DOUBLE, attackSpeed);
+        pdc.set(key_defense, PersistentDataType.INTEGER, defense);
+        pdc.set(key_health, PersistentDataType.INTEGER, health);
+        pdc.set(key_speed, PersistentDataType.DOUBLE, speed);
+        pdc.set(key_mana, PersistentDataType.INTEGER, mana);
+        pdc.set(key_slot, PersistentDataType.INTEGER, slotReq);
+        pdc.set(key_crit_chance, PersistentDataType.DOUBLE, critChance);
+
+        im.setUnbreakable(true);
+
+        i.setItemMeta(im);
+
+        return i;
+    }
+
+    public ItemStack build(int amount) {
+        ItemStack itemStack = build();
+        itemStack.setAmount(amount);
+        return itemStack;
+    }
+
+    private String getNormalName(RPGClass rpgClass) {
+        return rpgClass.toString().substring(0, 1).toUpperCase() + rpgClass.toString().substring(1).toLowerCase();
+    }
+
+    private void constructLore() {
         List<Component> lore = new ArrayList<>(itemLore != null ? itemLore : new ArrayList<>());
         if (reqClass != RPGClass.ANY) {
             lore.add(Component.text("Class: " + getNormalName(reqClass)).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
@@ -81,6 +130,9 @@ public class RPGItem {
         if (mana > 0) {
             lore.add(Component.text("Mana: " + mana).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.AQUA));
         }
+        if (max_durability > 0) {
+            lore.add(Component.text("Durability: " + durability + "/" + max_durability).decoration(TextDecoration.ITALIC, false).color(NamedTextColor.GRAY));
+        }
         if (slotReq != -1) {
             if (slotReq == 0) {
                 lore.add(Component.text("Slot: Main Hand").decoration(TextDecoration.ITALIC, false).color(NamedTextColor.WHITE));
@@ -97,48 +149,21 @@ public class RPGItem {
             }
         }
 
-        lore = RPGCore.fancyText(lore);
-        im.lore(lore);
+        this.itemLore = RPGCore.fancyText(lore);
+    }
 
-        NamespacedKey key_class = new NamespacedKey("rpgcore", "rpg_item_class");
-        NamespacedKey key_level = new NamespacedKey("rpgcore", "rpg_item_level");
-        NamespacedKey key_attack = new NamespacedKey("rpgcore", "rpg_item_attack");
-        NamespacedKey key_attack_speed = new NamespacedKey("rpgcore", "rpg_item_attack_speed");
-        NamespacedKey key_defense = new NamespacedKey("rpgcore", "rpg_item_defense");
-        NamespacedKey key_health = new NamespacedKey("rpgcore", "rpg_item_health");
-        NamespacedKey key_speed = new NamespacedKey("rpgcore", "rpg_item_speed");
-        NamespacedKey key_mana = new NamespacedKey("rpgcore", "rpg_item_mana");
-        NamespacedKey key_slot = new NamespacedKey("rpgcore", "rpg_item_slot");
-        NamespacedKey key_crit_chance = new NamespacedKey("rpgcore", "rpg_item_crit_chance");
-
-        PersistentDataContainer pdc = im.getPersistentDataContainer();
-        pdc.set(key_class, PersistentDataType.STRING, reqClass.name());
-        pdc.set(key_level, PersistentDataType.INTEGER, reqLevel);
-        pdc.set(key_attack, PersistentDataType.DOUBLE, attack);
-        pdc.set(key_attack_speed, PersistentDataType.DOUBLE, attackSpeed);
-        pdc.set(key_defense, PersistentDataType.INTEGER, defense);
-        pdc.set(key_health, PersistentDataType.INTEGER, health);
-        pdc.set(key_speed, PersistentDataType.DOUBLE, speed);
-        pdc.set(key_mana, PersistentDataType.INTEGER, mana);
-        pdc.set(key_slot, PersistentDataType.INTEGER, slotReq);
-        pdc.set(key_crit_chance, PersistentDataType.DOUBLE, critChance);
-
-        if (i.getDurability() > 0) {
-            im.setUnbreakable(true);
+    public void chipDurabilityAway(ItemStack itemStack, int amount) {
+        PersistentDataContainer pdc = itemStack.getItemMeta().getPersistentDataContainer();
+        if (max_durability <= 0) return;
+        durability -= amount;
+        if (durability <= 0) {
+            // break the item
+            itemStack.setAmount(0);
+            return;
         }
-
-        i.setItemMeta(im);
-
-        return i;
-    }
-
-    public ItemStack build(int amount) {
-        ItemStack itemStack = build();
-        itemStack.setAmount(amount);
-        return itemStack;
-    }
-
-    private String getNormalName(RPGClass rpgClass) {
-        return rpgClass.toString().substring(0, 1).toUpperCase() + rpgClass.toString().substring(1).toLowerCase();
+        pdc.set(new NamespacedKey("rpgcore", "rpg_item_durability"), PersistentDataType.INTEGER, durability);
+        // change the lore value
+        constructLore();
+        itemStack.getItemMeta().lore(itemLore);
     }
 }

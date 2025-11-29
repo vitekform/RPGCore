@@ -174,6 +174,7 @@ public class ItemDictionary {
         // 5 = Off Hand
         rpgItem.material = Material.IRON_SWORD;
         rpgItem.critChance = 15.0; // 15% crit chance
+        rpgItem.max_durability = 512;
         return rpgItem;
     }
 
@@ -191,6 +192,7 @@ public class ItemDictionary {
         rpgItem.slotReq = 1; // Helmet
         rpgItem.material = Material.LEATHER_HELMET;
         rpgItem.critChance = 0.0; // No crit chance for helmet
+        rpgItem.max_durability = 512;
         return rpgItem;
     }
 
@@ -208,6 +210,7 @@ public class ItemDictionary {
         rpgItem.slotReq = 2; // Chestplate
         rpgItem.material = Material.LEATHER_CHESTPLATE;
         rpgItem.critChance = 0.0; // No crit chance for chestplate
+        rpgItem.max_durability = 512;
         return rpgItem;
     }
 
@@ -225,6 +228,7 @@ public class ItemDictionary {
         rpgItem.slotReq = 3; // Leggings
         rpgItem.material = Material.LEATHER_LEGGINGS;
         rpgItem.critChance = 0.0; // No crit chance for leggings
+        rpgItem.max_durability = 512;
         return rpgItem;
     }
 
@@ -242,6 +246,7 @@ public class ItemDictionary {
         rpgItem.slotReq = 4; // Boots
         rpgItem.material = Material.LEATHER_BOOTS;
         rpgItem.critChance = 0.0; // No crit chance for boots
+        rpgItem.max_durability = 512;
         return rpgItem;
     }
 
