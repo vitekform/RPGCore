@@ -212,7 +212,13 @@ public class RPGPlayer {
                             mana_Items += pdc.getOrDefault(key_mana, PersistentDataType.INTEGER, 0);
                             critChance_Items += pdc.getOrDefault(key_crit_chance, PersistentDataType.DOUBLE, 0D);
                         } else {
-                            p.sendMessage(Component.text("You cannot equip " + is.getItemMeta().displayName() + " in this slot!").color(NamedTextColor.RED));
+                            Component displayName = is.getItemMeta().displayName();
+                            if (displayName == null) {
+                                displayName = Component.text(is.getType().name());
+                            }
+                            p.sendMessage(Component.text("You cannot equip ").color(NamedTextColor.RED)
+                                    .append(displayName)
+                                    .append(Component.text(" in this slot!").color(NamedTextColor.RED)));
                         }
                     } else {
                         p.sendMessage(Component.text("You are not high enough level to use one or more of your equipped items!").color(NamedTextColor.RED));
