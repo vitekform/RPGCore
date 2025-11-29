@@ -4,6 +4,8 @@ import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.RPGPlayer;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,12 +19,13 @@ public class PlayerDamageHandler implements Listener {
     public void whenEntityDamageEvent(EntityDamageEvent event) {
         if (event.getEntity() instanceof LivingEntity le) {
             if (le instanceof Player p) {
+                if (event.getDamageSource().getDamageType() == DamageType.GENERIC) return; // This is either /kill or special shit, that i use to keep the damage effect
                 double dmg = event.getDamage();
                 RPGPlayer rp = RPGCore.playerStorage.get(p.getUniqueId());
                 int d = Math.max(0, (int) dmg - (rp.defense_Base + rp.defense_Items));
                 rp.health -= d;
-                System.out.println("damage event occured");
                 event.setCancelled(true);
+                p.damage(0.1, DamageSource.builder(DamageType.GENERIC).build()); // Show damage effect
             }
         }
     }
