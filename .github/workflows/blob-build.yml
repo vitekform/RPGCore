@@ -12,12 +12,42 @@ jobs:
     if: contains(github.event.head_commit.message, '[ci skip]') == false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           java-version: 21
+          distribution: 'temurin'
+
+      - name: Increment build number
+        run: |
+          FILE="src/main/java/cz/vitekform/rPGCore/pluginUtils/PluginUpdater.java"
+          
+          # Find current build number with flexible whitespace matching
+          CURRENT_BUILD=$(grep -oP 'public\s+static\s+final\s+int\s+build\s*=\s*\K[0-9]+' "$FILE")
+          
+          # Validate that we found a build number
+          if [ -z "$CURRENT_BUILD" ]; then
+            echo "Error: Could not find build number in $FILE"
+            exit 1
+          fi
+          
+          NEW_BUILD=$((CURRENT_BUILD + 1))
+          
+          # Replace with flexible whitespace matching
+          sed -i -E "s/(public\s+static\s+final\s+int\s+build\s*=\s*)$CURRENT_BUILD;/\1$NEW_BUILD;/" "$FILE"
+          
+          # Verify the replacement was successful
+          VERIFY_BUILD=$(grep -oP 'public\s+static\s+final\s+int\s+build\s*=\s*\K[0-9]+' "$FILE")
+          if [ "$VERIFY_BUILD" != "$NEW_BUILD" ]; then
+            echo "Error: Build number replacement failed"
+            exit 1
+          fi
+          
+          echo "Build number incremented from $CURRENT_BUILD to $NEW_BUILD"
 
       - name: Build with Maven
         run: mvn -B package
@@ -29,3 +59,11 @@ jobs:
           apiToken: ${{ secrets.BLOB_BUILDS_API_TOKEN }}
           file: ./target/rpgcore-1.0.jar
           releaseNotes: ${{ github.event.head_commit.message }}
+
+      - name: Commit updated build number
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add src/main/java/cz/vitekform/rPGCore/pluginUtils/PluginUpdater.java
+          git commit -m "Increment build number [ci skip]"
+          git push
