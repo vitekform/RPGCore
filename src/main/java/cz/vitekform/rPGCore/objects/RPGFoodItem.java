@@ -5,6 +5,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +31,11 @@ public class RPGFoodItem extends RPGItem {
             NamespacedKey foodAmountKey = new NamespacedKey("rpgcore", "food_amount");
             NamespacedKey saturationAmountKey = new NamespacedKey("rpgcore", "saturation_amount");
 
-            item.getItemMeta().getPersistentDataContainer().set(isFoodKey, org.bukkit.persistence.PersistentDataType.BOOLEAN, true);
-            item.getItemMeta().getPersistentDataContainer().set(foodAmountKey, org.bukkit.persistence.PersistentDataType.INTEGER, foodAmount);
-            item.getItemMeta().getPersistentDataContainer().set(saturationAmountKey, org.bukkit.persistence.PersistentDataType.FLOAT, saturationAmount);
-            item.setItemMeta(item.getItemMeta());
+            ItemMeta itemMeta = item.getItemMeta();
+            itemMeta.getPersistentDataContainer().set(isFoodKey, org.bukkit.persistence.PersistentDataType.BOOLEAN, true);
+            itemMeta.getPersistentDataContainer().set(foodAmountKey, org.bukkit.persistence.PersistentDataType.INTEGER, foodAmount);
+            itemMeta.getPersistentDataContainer().set(saturationAmountKey, org.bukkit.persistence.PersistentDataType.FLOAT, saturationAmount);
+            item.setItemMeta(itemMeta);
         }
         return item;
     }

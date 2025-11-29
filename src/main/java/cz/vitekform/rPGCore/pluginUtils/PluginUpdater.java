@@ -1,7 +1,6 @@
 package cz.vitekform.rPGCore.pluginUtils;
 
 import com.google.gson.JsonObject;
-import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.ReleaseChannel;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -14,7 +13,7 @@ import java.nio.file.Paths;
 public class PluginUpdater {
 
     public static final String pluginVersion = "0.0.1";
-    public static final int build = 10;
+    public static final int build = 11;
     private static final ReleaseChannel releaseChannel = ReleaseChannel.DEV;
 
     public static int latestBuild(String channel) {
@@ -88,7 +87,7 @@ public class PluginUpdater {
         }
         // Download the file
         try (BufferedInputStream in = new BufferedInputStream(new URL(downloadUrl).openStream());
-             FileOutputStream fileOutputStream = new FileOutputStream(System.getProperty("user.dir") + "\\plugins\\RPGCoreNEW.jar")) {
+             FileOutputStream fileOutputStream = new FileOutputStream(System.getProperty("user.dir") + File.separator + "plugins" + File.separator + "RPGCoreNEW.jar")) {
             byte dataBuffer[] = new byte[1024];
             int bytesRead;
             while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
@@ -100,15 +99,15 @@ public class PluginUpdater {
         }
         // Delete current file
         try {
-            Files.deleteIfExists(Paths.get(System.getProperty("user.dir") + "\\plugins\\RPGCore.jar"));
+            Files.deleteIfExists(Paths.get(System.getProperty("user.dir") + File.separator + "plugins" + File.separator + "RPGCore.jar"));
         } catch (IOException e) {
             e.printStackTrace();
             return Component.text("An error occurred while trying to update the plugin. Error occurred while deleting the old version!", NamedTextColor.RED);
         }
         // Rename new file
         try {
-            File f = new File(System.getProperty("user.dir") + "\\plugins\\RPGCoreNEW.jar");
-            f.renameTo(new File(System.getProperty("user.dir") + "\\plugins\\RPGCore.jar"));
+            File f = new File(System.getProperty("user.dir") + File.separator + "plugins" + File.separator + "RPGCoreNEW.jar");
+            f.renameTo(new File(System.getProperty("user.dir") + File.separator + "plugins" + File.separator + "RPGCore.jar"));
         } catch (Exception e) {
             e.printStackTrace();
             return Component.text("An error occurred while trying to update the plugin. Error occurred while renaming the new version!", NamedTextColor.RED);

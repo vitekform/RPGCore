@@ -2,7 +2,6 @@ package cz.vitekform.rPGCore.listeners;
 
 import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.RPGClass;
-import cz.vitekform.rPGCore.objects.RPGItem;
 import cz.vitekform.rPGCore.objects.RPGPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -23,7 +22,7 @@ public class InventoryHandler implements Listener {
         if (event.getWhoClicked() instanceof Player p) {
             if (event.getView().getTitle().equals("Select your class")) {
                 event.setCancelled(true);
-                if (event.getCurrentItem().getType().equals(Material.IRON_SWORD)) {
+                if (event.getCurrentItem() != null && event.getCurrentItem().getType().equals(Material.IRON_SWORD)) {
                     p.sendMessage(Component.text("You chose your class to be a warrior!", NamedTextColor.GREEN));
                     RPGCore.playerStorage.get(p.getUniqueId()).rpgClass = RPGClass.WARRIOR;
                     p.closeInventory();
