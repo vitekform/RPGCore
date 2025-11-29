@@ -17,8 +17,9 @@ public class PlayerEatFoodHandler implements Listener {
             event.setCancelled(true); // Cancel the default eating behavior
 
             // Get the item from the player's inventory and consume it
-            ItemStack inventoryItem = event.getPlayer().getInventory().getItem(event.getPlayer().getInventory().getHeldItemSlot());
-            if (inventoryItem != null && !inventoryItem.getType().isAir()) {
+            int heldSlot = event.getPlayer().getInventory().getHeldItemSlot();
+            ItemStack inventoryItem = event.getPlayer().getInventory().getItem(heldSlot);
+            if (inventoryItem != null && !inventoryItem.getType().isAir() && inventoryItem.isSimilar(i)) {
                 inventoryItem.setAmount(inventoryItem.getAmount() - 1); // Consume one item
             }
 
