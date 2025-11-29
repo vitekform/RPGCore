@@ -19,10 +19,7 @@ public class PlayerDamageHandler implements Listener {
             if (le instanceof Player p) {
                 double dmg = event.getDamage();
                 RPGPlayer rp = RPGCore.playerStorage.get(p.getUniqueId());
-                int d = (int) dmg - (rp.defense_Base + rp.defense_Items);
-                if (d < 0) {
-                    d = 0; // Minimum damage is 0
-                }
+                int d = Math.max(0, (int) dmg - (rp.defense_Base + rp.defense_Items));
                 rp.health -= d;
             }
         }
