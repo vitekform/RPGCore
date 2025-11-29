@@ -21,6 +21,7 @@ public class PlayerDamageHandler implements Listener {
                 RPGPlayer rp = RPGCore.playerStorage.get(p.getUniqueId());
                 int d = Math.max(0, (int) dmg - (rp.defense_Base + rp.defense_Items));
                 rp.health -= d;
+                event.setCancelled(true);
             }
         }
     }
