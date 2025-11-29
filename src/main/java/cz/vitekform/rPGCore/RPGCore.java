@@ -186,42 +186,6 @@ public final class RPGCore extends JavaPlugin {
                             )
                             .build(), "The main command for RPGCore.", List.of("rpg", "rpgc", "core")
             );
-
-            commands.register(
-                    Commands.literal("class")
-                            .executes(
-                                    ctx -> {
-                                        if (ctx.getSource().getSender() instanceof Player p) {
-                                            if (playerStorage.containsKey(p.getUniqueId())) {
-                                                RPGPlayer pl = playerStorage.get(p.getUniqueId());
-                                                if (pl.rpgClass == RPGClass.NONE) {
-                                                    Inventory gui = Bukkit.createInventory(p, 27, "Select your class");
-
-                                                    ItemStack nothing = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
-                                                    ItemMeta nothingMeta = nothing.getItemMeta();
-                                                    nothingMeta.displayName(Component.text(" "));
-                                                    nothing.setItemMeta(nothingMeta);
-
-                                                    for (int i = 0; i < 27; i++) {
-                                                        gui.setItem(i, nothing);
-                                                    }
-
-                                                    gui.setItem(10, ItemDictionary.warriorClassItem().build());
-                                                    gui.setItem(13, ItemDictionary.archerClassItem().build());
-                                                    gui.setItem(16, ItemDictionary.mageClassItem().build());
-
-                                                    p.openInventory(gui);
-                                                }
-                                                else {
-                                                    p.sendMessage(Component.text("You already have a class!", NamedTextColor.RED));
-                                                }
-                                            }
-                                        }
-
-                                        return Command.SINGLE_SUCCESS;
-                                    }
-                            ).build(), "Opens Class Selection Menu", List.of("classes")
-            );
         });
 
         // Register events
@@ -317,6 +281,34 @@ public final class RPGCore extends JavaPlugin {
                 }
             } else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.VERSION)) {
                 ctx.getSource().getSender().sendMessage(Component.text("Currently running version " + PluginUpdater.pluginVersion + " Build " + PluginUpdater.build + " from " + PluginUpdater.buildChannelString() + " Build Channel", NamedTextColor.GREEN));
+            }
+            else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.CLASS)) {
+                if (ctx.getSource().getSender() instanceof Player p) {
+                    if (playerStorage.containsKey(p.getUniqueId())) {
+                        RPGPlayer pl = playerStorage.get(p.getUniqueId());
+                        if (pl.rpgClass == RPGClass.NONE) {
+                            Inventory gui = Bukkit.createInventory(p, 27, "Select your class");
+
+                            ItemStack nothing = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+                            ItemMeta nothingMeta = nothing.getItemMeta();
+                            nothingMeta.displayName(Component.text(" "));
+                            nothing.setItemMeta(nothingMeta);
+
+                            for (int i = 0; i < 27; i++) {
+                                gui.setItem(i, nothing);
+                            }
+
+                            gui.setItem(10, ItemDictionary.warriorClassItem().build());
+                            gui.setItem(13, ItemDictionary.archerClassItem().build());
+                            gui.setItem(16, ItemDictionary.mageClassItem().build());
+
+                            p.openInventory(gui);
+                        }
+                        else {
+                            p.sendMessage(Component.text("You already have a class!", NamedTextColor.RED));
+                        }
+                    }
+                }
             }
             else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.HELP)) {
                 Map<String, Component> help = new HashMap<>();
