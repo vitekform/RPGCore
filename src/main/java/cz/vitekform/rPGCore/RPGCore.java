@@ -310,6 +310,31 @@ public final class RPGCore extends JavaPlugin {
                     }
                 }
             }
+            else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.ATTRIBUTES)) {
+                if (ctx.getSource().getSender() instanceof Player p) {
+                    if (playerStorage.containsKey(p.getUniqueId())) {
+                        Inventory gui = Bukkit.createInventory(p, 27, "Your attributes");
+
+                        ItemStack nothing = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+                        ItemMeta nothingMeta = nothing.getItemMeta();
+                        nothingMeta.displayName(Component.text(" "));
+                        nothing.setItemMeta(nothingMeta);
+
+                        for (int i = 0; i < 27; i++) {
+                            gui.setItem(i, nothing);
+                        }
+
+                        gui.setItem(9, ItemDictionary.strengthAttributeItem().build());
+                        gui.setItem(11, ItemDictionary.dexterityAttributeItem().build());
+                        gui.setItem(13, ItemDictionary.intelligenceAttributeItem().build());
+                        gui.setItem(15, ItemDictionary.enduranceAttributeItem().build());
+                        gui.setItem(17, ItemDictionary.vitalityAttributeItem().build());
+                        gui.setItem(26, ItemDictionary.attributePointsItem(playerStorage.get(p.getUniqueId())).build());
+
+                        p.openInventory(gui);
+                    }
+                }
+            }
             else if (ctx.getArgument("subcommand", RPGCoreSubcommand.class).equals(RPGCoreSubcommand.HELP)) {
                 Map<String, Component> help = new HashMap<>();
                 help.put("update", Component.text("Update the plugin.", NamedTextColor.GREEN));

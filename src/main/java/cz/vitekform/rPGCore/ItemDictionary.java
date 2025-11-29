@@ -3,6 +3,7 @@ package cz.vitekform.rPGCore;
 import cz.vitekform.rPGCore.objects.RPGClass;
 import cz.vitekform.rPGCore.objects.RPGFoodItem;
 import cz.vitekform.rPGCore.objects.RPGItem;
+import cz.vitekform.rPGCore.objects.RPGPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -58,6 +59,96 @@ public class ItemDictionary {
         rpgItem.health = 0;
         rpgItem.speed = 0;
         rpgItem.material = Material.BLAZE_ROD;
+        return rpgItem;
+    }
+
+    public static RPGItem strengthAttributeItem() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Strength").color(NamedTextColor.RED);
+        rpgItem.itemLore = List.of(Component.text("Strength increases your:").color(NamedTextColor.RED), Component.text("Melee damage"), Component.text("Carry weight"), Component.text("And chance to block melee attacks"));
+        rpgItem.reqLevel = 0;
+        rpgItem.reqClass = RPGClass.ANY;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 0;
+        rpgItem.health = 0;
+        rpgItem.speed = 0;
+        rpgItem.material = Material.IRON_SWORD;
+        return rpgItem;
+    }
+
+    public static RPGItem dexterityAttributeItem() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Dexterity").color(NamedTextColor.GREEN);
+        rpgItem.itemLore = List.of(Component.text("Dexterity increases your:").color(NamedTextColor.GREEN), Component.text("Ranged damage"), Component.text("Chance to dodge ranged attacks"), Component.text("And chance to dodge melee attacks"));
+        rpgItem.reqLevel = 0;
+        rpgItem.reqClass = RPGClass.ANY;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 0;
+        rpgItem.health = 0;
+        rpgItem.speed = 0;
+        rpgItem.material = Material.BOW;
+        return rpgItem;
+    }
+
+    public static RPGItem intelligenceAttributeItem() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Intelligence").color(NamedTextColor.AQUA);
+        rpgItem.itemLore = List.of(Component.text("Intelligence increases your:").color(NamedTextColor.AQUA), Component.text("Maximum mana capacity"), Component.text("Damage using spells (and healing)"), Component.text("And decreases the chance of miscast"));
+        rpgItem.reqLevel = 0;
+        rpgItem.reqClass = RPGClass.ANY;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 0;
+        rpgItem.health = 0;
+        rpgItem.speed = 0;
+        rpgItem.material = Material.AMETHYST_SHARD;
+        return rpgItem;
+    }
+
+    public static RPGItem enduranceAttributeItem() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Endurance").color(NamedTextColor.WHITE);
+        rpgItem.itemLore = List.of(Component.text("Endurance increases your:").color(NamedTextColor.WHITE), Component.text("Max Health"), Component.text("And max stamina"));
+        rpgItem.reqLevel = 0;
+        rpgItem.reqClass = RPGClass.ANY;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 0;
+        rpgItem.health = 0;
+        rpgItem.speed = 0;
+        rpgItem.material = Material.IRON_CHESTPLATE;
+        return rpgItem;
+    }
+
+    public static RPGItem vitalityAttributeItem() {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Vitality").color(NamedTextColor.RED);
+        rpgItem.itemLore = List.of(Component.text("Vitality increases your:").color(NamedTextColor.RED), Component.text("Health regeneration"), Component.text("Mana Regeneration"), Component.text("And Stamina Regeneration"));
+        rpgItem.reqLevel = 0;
+        rpgItem.reqClass = RPGClass.ANY;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 0;
+        rpgItem.health = 0;
+        rpgItem.speed = 0;
+        rpgItem.material = Material.GOLDEN_APPLE;
+        return rpgItem;
+    }
+
+    public static RPGItem attributePointsItem(RPGPlayer player) {
+        RPGItem rpgItem = new RPGItem();
+        rpgItem.itemName = Component.text("Free Attribute Points").color(NamedTextColor.GREEN);
+        rpgItem.itemLore = List.of(Component.text("You have ").color(NamedTextColor.GREEN).append(Component.text(player.attributePoints + " ")).color(NamedTextColor.RED).append(Component.text("free attribute points.")).color(NamedTextColor.GREEN));
+        rpgItem.reqLevel = 0;
+        rpgItem.reqClass = RPGClass.ANY;
+        rpgItem.attack = 0;
+        rpgItem.attackSpeed = 0;
+        rpgItem.defense = 0;
+        rpgItem.health = 0;
+        rpgItem.speed = 0;
+        rpgItem.material = Material.GOLDEN_APPLE;
         return rpgItem;
     }
 

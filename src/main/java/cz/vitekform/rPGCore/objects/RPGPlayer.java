@@ -5,6 +5,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Player;
@@ -116,6 +117,11 @@ public class RPGPlayer {
         this.attributePoints += 5;
         this.totalSkillPoints += 1;
         this.totalAttributePoints += 5;
+        updateItemStats();
+        Player p = Bukkit.getPlayer(uuid);
+        p.playSound(p, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F);
+        p.sendMessage(Component.text("You have leveled up to level " + level + "!").color(NamedTextColor.GREEN));
+        p.sendMessage(Component.text("You now have " + skillPoints + " free skill points and " + attributePoints + " free attribute points.").color(NamedTextColor.GREEN));
     }
 
     public void updateItemStats() {

@@ -123,6 +123,10 @@ public class RPGItem {
         pdc.set(key_slot, PersistentDataType.INTEGER, slotReq);
         pdc.set(key_crit_chance, PersistentDataType.DOUBLE, critChance);
 
+        if (i.getDurability() > 0) {
+            im.setUnbreakable(true);
+        }
+
         i.setItemMeta(im);
 
         return i;
