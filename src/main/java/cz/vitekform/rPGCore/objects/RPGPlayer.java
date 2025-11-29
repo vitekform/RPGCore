@@ -110,7 +110,7 @@ public class RPGPlayer {
 
     public void levelUp() {
         this.level++;
-        this.maxExp = (int) (this.maxExp * 1.1);
+        this.maxExp = reqExpForLevel(this.level);
         this.exp = 0;
         this.skillPoints += 1;
         this.attributePoints += 5;
@@ -242,9 +242,42 @@ public class RPGPlayer {
         p.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(totalSpeed);
     }
 
+    private static int linearXP(int level) {
+        return 50 + 50 * level; // for example 50xp per level
+    }
+
+    // polynomické XP
+    private static int polynomialXP(int level, double pol) {
+        return (int)(100 * Math.pow(level, pol)); // yes polynom
+    }
+
+    private static int reqExpForLevel(int level) {
+        /*
+        1-5 --- Linear because we cant scare new players that much
+        6-15 --- Polynomial with pol of 1.3
+        16-25 --- Polynomial with pol of 1.5
+        26-35 --- Polynomial with pol of 1.7
+        36-50 --- Polynomial with pol of 2.0
+        51+ --- Polynomial with base of pol 2.0 that increases for each 25 levels by .25
+        Have fun! (i guess)
+         */
+        if (level <= 5) return linearXP(level);
+        else if (level <= 15) return polynomialXP(level, 1.3);
+        else if (level <= 25) return polynomialXP(level, 1.5);
+        else if (level <= 35) return polynomialXP(level, 1.7);
+        else if (level <= 50) return polynomialXP(level, 2.0);
+        else {
+            double pol = 2.0;
+            for (int i = 50; i <= level; i += 25) pol += .25;
+            return polynomialXP(level, pol);
+        }
+    }
+
     public void handleExpAdd(int experienceAfterDefeat) {
         this.exp += experienceAfterDefeat;
-        // To DO:
-        // Check if player has enough experience to level up
+        int currentLevel = this.level;
+        while (this.exp >= reqExpForLevel(currentLevel + 1)) {
+            this.levelUp();
+        }
     }
 }
