@@ -144,7 +144,7 @@ public final class RPGCore extends JavaPlugin {
                 else if (c == 'z' || c == 'Z') {
                     c = 'ᴢ';
                 }
-                nChars.add(c);
+                nChars.add(Character.valueOf(c));
             }
             String nString = "";
             for (Character c : nChars) {
