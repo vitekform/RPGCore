@@ -9,6 +9,10 @@ public enum RPGCoreSubcommand {
     VERSION,
     SUMMON,
     TEST,
+    CLASS,
+    ATTRIBUTES,
+    SKILLS,
+    LEVEL,
     KIT_ADVENTURER;
 
     public @NotNull String permission(RPGCoreSubcommand subcommand) {

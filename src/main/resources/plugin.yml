@@ -12,8 +12,3 @@ commands:
       - rpg
       - rpgc
       - core
-  class:
-    description: Main command for class management
-    usage: /class
-    aliases:
-      - classes
