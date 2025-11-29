@@ -435,12 +435,13 @@ public final class RPGCore extends JavaPlugin {
 
                 double healthFactor = health / maxHealth;
 
-                if (healthFactor * 40 > 40) {
-                    // We got a problem!
+                if (healthFactor > 1.0) {
+                    // Cap health factor to prevent display issues
                     healthFactor = 1.0;
                 }
-                if (healthFactor == 0) {
-                    healthFactor = 0.1; // Player is supposed to be dead, but since somehow it somewhere works (and i dont know why and it doesnt work as it should :D)
+                if (healthFactor <= 0) {
+                    // Set minimum health factor to prevent invalid health values while player death is handled elsewhere
+                    healthFactor = 0.1;
                 }
                 pl.setHealth(healthFactor * 40);
 
