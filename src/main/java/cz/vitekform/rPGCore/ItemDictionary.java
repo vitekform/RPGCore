@@ -6,7 +6,6 @@ import cz.vitekform.rPGCore.objects.RPGItem;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
 import java.util.HashMap;

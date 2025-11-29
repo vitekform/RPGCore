@@ -18,12 +18,12 @@ public class PlayerDamageHandler implements Listener {
         if (event.getEntity() instanceof LivingEntity le) {
             if (le instanceof Player p) {
                 double dmg = event.getDamage();
-                int d = ((int) dmg - RPGCore.playerStorage.get(p.getUniqueId()).defense_Base + RPGCore.playerStorage.get(p.getUniqueId()).defense_Items);
-                RPGCore.playerStorage.get(p.getUniqueId()).health -= d;
-                if (RPGCore.playerStorage.get(p.getUniqueId()).health > 0) {
-                    RPGPlayer rp = RPGCore.playerStorage.get(p.getUniqueId());
-                    rp.health = rp.health - d;
+                RPGPlayer rp = RPGCore.playerStorage.get(p.getUniqueId());
+                int d = (int) dmg - (rp.defense_Base + rp.defense_Items);
+                if (d < 0) {
+                    d = 0; // Minimum damage is 0
                 }
+                rp.health -= d;
             }
         }
     }

@@ -1,6 +1,5 @@
 package cz.vitekform.rPGCore.objects;
 
-import cz.vitekform.rPGCore.ItemDictionary;
 import cz.vitekform.rPGCore.RPGCore;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
