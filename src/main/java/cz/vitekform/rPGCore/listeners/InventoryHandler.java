@@ -1,5 +1,6 @@
 package cz.vitekform.rPGCore.listeners;
 
+import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.RPGClass;
 import cz.vitekform.rPGCore.objects.RPGPlayer;
@@ -29,10 +30,16 @@ public class InventoryHandler implements Listener {
                     p.playSound(p, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                 }
             }
-            if (event.getInventory().getHolder() instanceof Player) {
-                // It is player inventory
-                RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
-                rpgp.updateItemStats();
+            // Update stats for any inventory click that could affect equipped items
+            RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
+            if (rpgp != null) {
+                // Delay the stats update to ensure the inventory change is processed first
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        rpgp.updateItemStats();
+                    }
+                }.runTaskLater(RPGCore.getPlugin(RPGCore.class), 1L);
             }
         }
     }
@@ -41,21 +48,44 @@ public class InventoryHandler implements Listener {
     public void whenPlayerSwitchesItemInOffhand(PlayerSwapHandItemsEvent event) {
         Player p = event.getPlayer();
         RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
-        rpgp.updateItemStats();
+        if (rpgp != null) {
+            // Delay the stats update to ensure the item swap is processed first
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    rpgp.updateItemStats();
+                }
+            }.runTaskLater(RPGCore.getPlugin(RPGCore.class), 1L);
+        }
     }
 
     @EventHandler
     public void whenPlayerSwitchMainItem(PlayerItemHeldEvent event) {
         Player p = event.getPlayer();
         RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
-        rpgp.updateItemStats();
+        if (rpgp != null) {
+            // Update the player's stats after switching items
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    rpgp.updateItemStats();
+                }
+            }.runTaskLater(RPGCore.getPlugin(RPGCore.class), 1L); // Delay to ensure the item switch is processed
+        }
+    }
 
-        // Update the player's stats after switching items
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                rpgp.updateItemStats();
-            }
-        }.runTaskLater(RPGCore.getPlugin(RPGCore.class), 1L); // Delay to ensure the item switch is processed
+    @EventHandler
+    public void whenPlayerChangesArmor(PlayerArmorChangeEvent event) {
+        Player p = event.getPlayer();
+        RPGPlayer rpgp = RPGCore.playerStorage.get(p.getUniqueId());
+        if (rpgp != null) {
+            // Delay the stats update to ensure the armor change is processed first
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    rpgp.updateItemStats();
+                }
+            }.runTaskLater(RPGCore.getPlugin(RPGCore.class), 1L);
+        }
     }
 }
