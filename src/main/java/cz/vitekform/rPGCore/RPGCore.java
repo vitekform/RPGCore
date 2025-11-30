@@ -35,10 +35,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public final class RPGCore extends JavaPlugin {
 
@@ -84,7 +81,7 @@ public final class RPGCore extends JavaPlugin {
             sb.append(charMap.getOrDefault(ch, ch));
         }
 
-        if (!sb.isBlank()) {
+        if (!sb.isEmpty()) {
             TextColor color = c.color();
             Map<TextDecoration, TextDecoration.State> decs = c.decorations();
             if (decs.isEmpty()) {
