@@ -12,10 +12,12 @@ import org.bukkit.Material;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class ItemDictionary {
 
     public static final Map<String, RPGItem> items = new HashMap<>();
+    public static final Map<UUID, RPGItem> itemRegistry = new HashMap<>();
 
     public static RPGItem warriorClassItem() {
         RPGItem rpgItem = new RPGItem();
