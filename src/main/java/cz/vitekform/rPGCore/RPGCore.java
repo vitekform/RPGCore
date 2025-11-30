@@ -45,122 +45,56 @@ public final class RPGCore extends JavaPlugin {
     public static final Map<UUID, RPGPlayer> playerStorage = new HashMap<>();
     public static final Map<UUID, RPGEntity> entityStorage = new HashMap<>();
 
-    public static List<Component> fancyText(List<Component> original) {
-        List<String> lines = new java.util.ArrayList<>();
-        List<TextColor> colors = new java.util.ArrayList<>();
-        List<Map<TextDecoration, TextDecoration.State>> decorations = new java.util.ArrayList<>();
-        List<String> nLines = new java.util.ArrayList<>();
-        for (Component c : original) {
-            String plainText = PlainTextComponentSerializer.plainText().serialize(c);
-            lines.add(plainText);
-            colors.add(c.color());
-            if (!c.decorations().isEmpty()) {
-                decorations.add(c.decorations());
-            }
-            else {
-                decorations.add(Map.of(TextDecoration.ITALIC, TextDecoration.State.FALSE));
-            }
+   public static List<Component> fancyText(List<Component> original) {
+    Map<Character, Character> charMap = Map.ofEntries(
+        Map.entry('a', 'ᴀ'), Map.entry('A', 'ᴀ'),
+        Map.entry('b', 'ʙ'), Map.entry('B', 'ʙ'),
+        Map.entry('c', 'ᴄ'), Map.entry('C', 'ᴄ'),
+        Map.entry('d', 'ᴅ'), Map.entry('D', 'ᴅ'),
+        Map.entry('e', 'ᴇ'), Map.entry('E', 'ᴇ'),
+        Map.entry('f', 'ꜰ'), Map.entry('F', 'ꜰ'),
+        Map.entry('g', 'ɢ'), Map.entry('G', 'ɢ'),
+        Map.entry('h', 'ʜ'), Map.entry('H', 'ʜ'),
+        Map.entry('i', 'ɪ'), Map.entry('I', 'ɪ'),
+        Map.entry('j', 'ᴊ'), Map.entry('J', 'ᴊ'),
+        Map.entry('k', 'ᴋ'), Map.entry('K', 'ᴋ'),
+        Map.entry('l', 'ʟ'), Map.entry('L', 'ʟ'),
+        Map.entry('m', 'ᴍ'), Map.entry('M', 'ᴍ'),
+        Map.entry('n', 'ɴ'), Map.entry('N', 'ɴ'),
+        Map.entry('o', 'ᴏ'), Map.entry('O', 'ᴏ'),
+        Map.entry('p', 'ᴘ'), Map.entry('P', 'ᴘ'),
+        Map.entry('q', 'ǫ'), Map.entry('Q', 'ǫ'),
+        Map.entry('r', 'ʀ'), Map.entry('R', 'ʀ'),
+        Map.entry('s', 's'), Map.entry('S', 's'),
+        Map.entry('t', 'ᴛ'), Map.entry('T', 'ᴛ'),
+        Map.entry('u', 'ᴜ'), Map.entry('U', 'ᴜ'),
+        Map.entry('v', 'ᴠ'), Map.entry('V', 'ᴠ'),
+        Map.entry('w', 'ᴡ'), Map.entry('W', 'ᴡ'),
+        Map.entry('x', 'x'), Map.entry('X', 'x'),
+        Map.entry('y', 'ʏ'), Map.entry('Y', 'ʏ'),
+        Map.entry('z', 'ᴢ'), Map.entry('Z', 'ᴢ')
+    );
+
+    List<Component> nComponents = new ArrayList<>();
+    for (Component c : original) {
+        String plainText = PlainTextComponentSerializer.plainText().serialize(c);
+        StringBuilder sb = new StringBuilder();
+
+        for (char ch : plainText.toCharArray()) {
+            sb.append(charMap.getOrDefault(ch, ch));
         }
 
-        for (String s : lines) {
-            char[] chars = s.toCharArray();
-            List<Character> nChars = new java.util.ArrayList<>();
-            for (char c : chars) {
-                if (c == 'a' || c == 'A') {
-                    c = 'ᴀ';
-                }
-                else if (c == 'b' || c == 'B') {
-                    c = 'ʙ';
-                }
-                else if (c == 'c' || c == 'C') {
-                    c = 'ᴄ';
-                }
-                else if (c == 'd' || c == 'D') {
-                    c = 'ᴅ';
-                }
-                else if (c == 'e' || c == 'E') {
-                    c = 'ᴇ';
-                }
-                else if (c == 'f' || c == 'F') {
-                    c = 'ꜰ';
-                }
-                else if (c == 'g' || c == 'G') {
-                    c = 'ɢ';
-                }
-                else if (c == 'h' || c == 'H') {
-                    c = 'ʜ';
-                }
-                else if (c == 'i' || c == 'I') {
-                    c = 'ɪ';
-                }
-                else if (c == 'j' || c == 'J') {
-                    c = 'ᴊ';
-                }
-                else if (c == 'k' || c == 'K') {
-                    c = 'ᴋ';
-                }
-                else if (c == 'l' || c == 'L') {
-                    c = 'ʟ';
-                }
-                else if (c == 'm' || c == 'M') {
-                    c = 'ᴍ';
-                }
-                else if (c == 'n' || c == 'N') {
-                    c = 'ɴ';
-                }
-                else if (c == 'o' || c == 'O') {
-                    c = 'ᴏ';
-                }
-                else if (c == 'p' || c == 'P') {
-                    c = 'ᴘ';
-                }
-                else if (c == 'q' || c == 'Q') {
-                    c = 'ǫ';
-                }
-                else if (c == 'r' || c == 'R') {
-                    c = 'ʀ';
-                }
-                else if (c == 's' || c == 'S') {
-                    c = 's';
-                }
-                else if (c == 't' || c == 'T') {
-                    c = 'ᴛ';
-                }
-                else if (c == 'u' || c == 'U') {
-                    c = 'ᴜ';
-                }
-                else if (c == 'v' || c == 'V') {
-                    c = 'ᴠ';
-                }
-                else if (c == 'w' || c == 'W') {
-                    c = 'ᴡ';
-                }
-                else if (c == 'x' || c == 'X') {
-                    c = 'x';
-                }
-                else if (c == 'y' || c == 'Y') {
-                    c = 'ʏ';
-                }
-                else if (c == 'z' || c == 'Z') {
-                    c = 'ᴢ';
-                }
-                nChars.add(Character.valueOf(c));
+        if (!sb.isBlank()) {
+            TextColor color = c.color();
+            Map<TextDecoration, TextDecoration.State> decs = c.decorations();
+            if (decs.isEmpty()) {
+                decs = Map.of(TextDecoration.ITALIC, TextDecoration.State.FALSE);
             }
-            String nString = "";
-            for (Character c : nChars) {
-                nString += c;
-            }
-            if (!nString.isBlank()) {
-                nLines.add(nString);
-                colors.add(colors.get(lines.indexOf(s))); // also keep color in sync
-            }
+            nComponents.add(Component.text(sb.toString(), color).decorations(decs));
         }
-        List<Component> nComponents = new java.util.ArrayList<>();
-        for (int i = 0; i < nLines.size(); i++) {
-            nComponents.add(Component.text(nLines.get(i), colors.get(i)).decorations(decorations.get(i)));
-        }
-        return nComponents;
     }
+    return nComponents;
+}
 
     @Override
     public void onEnable() {
