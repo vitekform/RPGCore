@@ -85,7 +85,6 @@ public class RPGItem {
         pdc.set(key_crit_chance, PersistentDataType.DOUBLE, critChance);
 
         im.setUnbreakable(true);
-        im.setHideTooltip(true);
 
         i.setItemMeta(im);
 
