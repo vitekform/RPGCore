@@ -103,6 +103,10 @@ public final class RPGCore extends JavaPlugin {
             getLogger().info(ChatColor.RED + "You are not running the latest version of RPGCore. Please update to build " + PluginUpdater.latestBuild(PluginUpdater.buildChannelString()) + " from " + PluginUpdater.buildChannelString() + " Build Channel. Using /rpg update");
         }
 
+        // Load items from items.yml
+        ItemLoader itemLoader = new ItemLoader(this);
+        itemLoader.loadItems();
+
         final LifecycleEventManager<Plugin> manager = this.getLifecycleManager();
         manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             final Commands commands = event.registrar();
