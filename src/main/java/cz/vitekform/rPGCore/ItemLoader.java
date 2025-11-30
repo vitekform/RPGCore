@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -42,10 +43,13 @@ public class ItemLoader {
         FileConfiguration itemsConfig = YamlConfiguration.loadConfiguration(itemsFile);
 
         // Load defaults from jar to merge any new items
-        InputStream defaultStream = plugin.getResource("items.yml");
-        if (defaultStream != null) {
-            YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream));
-            itemsConfig.setDefaults(defaultConfig);
+        try (InputStream defaultStream = plugin.getResource("items.yml")) {
+            if (defaultStream != null) {
+                YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
+                itemsConfig.setDefaults(defaultConfig);
+            }
+        } catch (Exception e) {
+            logger.warning("Failed to load default items.yml: " + e.getMessage());
         }
 
         ConfigurationSection itemsSection = itemsConfig.getConfigurationSection("items");
@@ -64,7 +68,7 @@ public class ItemLoader {
                 RPGItem item = loadItem(itemSection, key);
                 if (item != null) {
                     // Generate UUID for the item and register it
-                    UUID itemUUID = UUID.nameUUIDFromBytes(key.getBytes());
+                    UUID itemUUID = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
                     ItemDictionary.itemRegistry.put(itemUUID, item);
                     ItemDictionary.items.put(key, item);
                     logger.info("Loaded item: " + key);
