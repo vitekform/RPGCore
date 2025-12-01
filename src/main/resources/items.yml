@@ -1,0 +1,212 @@
+# RPGCore Items Configuration
+# Each item must have: id, name, material
+# Optional attributes: reqLevel, reqClass, attack, attackSpeed, defense, health, speed, mana, critChance, max_durability, slotReq, lore
+# For food items, add: foodAmount, saturationAmount
+#
+# slotReq values:
+#   -1 = Any
+#   0 = Main Hand
+#   1 = Helmet
+#   2 = Chestplate
+#   3 = Leggings
+#   4 = Boots
+#   5 = Off Hand
+#
+# reqClass values: WARRIOR, MAGE, ARCHER, ANY, NONE
+
+items:
+  # Class selection items (for GUI)
+  warrior_class_item:
+    id: "warrior_class_item"
+    name: "Warrior"
+    nameColor: "RED"
+    material: IRON_SWORD
+    lore:
+      - "A strong and brave warrior."
+    loreColor: "GRAY"
+    reqLevel: 0
+    reqClass: ANY
+
+  archer_class_item:
+    id: "archer_class_item"
+    name: "Archer"
+    nameColor: "GREEN"
+    material: BOW
+    lore:
+      - "A skilled archer"
+    loreColor: "GRAY"
+    reqLevel: 0
+    reqClass: ANY
+
+  mage_class_item:
+    id: "mage_class_item"
+    name: "Mage"
+    nameColor: "BLUE"
+    material: BLAZE_ROD
+    lore:
+      - "A powerful mage."
+    loreColor: "GRAY"
+    reqLevel: 0
+    reqClass: ANY
+
+  # Attribute items (for GUI)
+  strength_attribute_item:
+    id: "strength_attribute_item"
+    name: "Strength"
+    nameColor: "RED"
+    material: IRON_SWORD
+    lore:
+      - "Strength increases your:"
+      - "Melee damage"
+      - "Carry weight"
+      - "And chance to block melee attacks"
+    loreColor: "RED"
+    reqLevel: 0
+    reqClass: ANY
+
+  dexterity_attribute_item:
+    id: "dexterity_attribute_item"
+    name: "Dexterity"
+    nameColor: "GREEN"
+    material: BOW
+    lore:
+      - "Dexterity increases your:"
+      - "Ranged damage"
+      - "Chance to dodge ranged attacks"
+      - "And chance to dodge melee attacks"
+    loreColor: "GREEN"
+    reqLevel: 0
+    reqClass: ANY
+
+  intelligence_attribute_item:
+    id: "intelligence_attribute_item"
+    name: "Intelligence"
+    nameColor: "AQUA"
+    material: AMETHYST_SHARD
+    lore:
+      - "Intelligence increases your:"
+      - "Maximum mana capacity"
+      - "Damage using spells (and healing)"
+      - "And decreases the chance of miscast"
+    loreColor: "AQUA"
+    reqLevel: 0
+    reqClass: ANY
+
+  endurance_attribute_item:
+    id: "endurance_attribute_item"
+    name: "Endurance"
+    nameColor: "WHITE"
+    material: IRON_CHESTPLATE
+    lore:
+      - "Endurance increases your:"
+      - "Max Health"
+      - "And max stamina"
+    loreColor: "WHITE"
+    reqLevel: 0
+    reqClass: ANY
+
+  vitality_attribute_item:
+    id: "vitality_attribute_item"
+    name: "Vitality"
+    nameColor: "RED"
+    material: GOLDEN_APPLE
+    lore:
+      - "Vitality increases your:"
+      - "Health regeneration"
+      - "Mana Regeneration"
+      - "And Stamina Regeneration"
+    loreColor: "RED"
+    reqLevel: 0
+    reqClass: ANY
+
+  # Adventurer equipment
+  adventurer_sword:
+    id: "adventurer_sword"
+    name: "Adventurer's Sword"
+    nameColor: "WHITE"
+    material: IRON_SWORD
+    lore:
+      - "Sword that every adventurer needs in their equipment! Quality assured!"
+    loreColor: "GRAY"
+    reqLevel: 1
+    reqClass: WARRIOR
+    attack: 6.0
+    attackSpeed: 1.6
+    critChance: 15.0
+    max_durability: 512
+    slotReq: -1
+
+  adventurer_helmet:
+    id: "adventurer_helmet"
+    name: "Adventurer's Helmet"
+    nameColor: "WHITE"
+    material: LEATHER_HELMET
+    lore:
+      - "Helmet that every adventurer needs! Guaranteed to protect your head against weather I guess."
+    loreColor: "GRAY"
+    reqLevel: 1
+    reqClass: WARRIOR
+    defense: 1
+    health: 5
+    max_durability: 512
+    slotReq: 1
+
+  adventurer_chestplate:
+    id: "adventurer_chestplate"
+    name: "Adventurer's Chestplate"
+    nameColor: "WHITE"
+    material: LEATHER_CHESTPLATE
+    lore:
+      - "Chestplate that every adventurer needs! Guaranteed to protect your chest against something... You will probably find out what it is for"
+    loreColor: "GRAY"
+    reqLevel: 1
+    reqClass: WARRIOR
+    defense: 3
+    health: 10
+    max_durability: 512
+    slotReq: 2
+
+  adventurer_leggings:
+    id: "adventurer_leggings"
+    name: "Adventurer's Leggings"
+    nameColor: "WHITE"
+    material: LEATHER_LEGGINGS
+    lore:
+      - "Leggings that every adventurer needs! Guaranteed to protect your legs and other parts against cold? I hope..."
+    loreColor: "GRAY"
+    reqLevel: 1
+    reqClass: WARRIOR
+    defense: 2
+    health: 7
+    max_durability: 512
+    slotReq: 3
+
+  adventurer_boots:
+    id: "adventurer_boots"
+    name: "Adventurer's Boots"
+    nameColor: "WHITE"
+    material: LEATHER_BOOTS
+    lore:
+      - "Boots that every adventurer needs! Guaranteed to protect your feet against trench foot"
+    loreColor: "GRAY"
+    reqLevel: 1
+    reqClass: WARRIOR
+    defense: 1
+    health: 3
+    max_durability: 512
+    slotReq: 4
+
+  stale_bread:
+    id: "stale_bread"
+    name: "Stale Bread"
+    nameColor: "WHITE"
+    material: BREAD
+    lore:
+      - "A piece of stale bread. Not very tasty, but it will fill your stomach."
+    loreColor: "GRAY"
+    reqLevel: 0
+    reqClass: ANY
+    slotReq: -1
+    isFood: true
+    foodAmount: 2
+    saturationAmount: 0.4
