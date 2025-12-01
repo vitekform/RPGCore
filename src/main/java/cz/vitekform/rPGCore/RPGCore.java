@@ -3,12 +3,14 @@ package cz.vitekform.rPGCore;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import cz.vitekform.rPGCore.commands.args.classes.RPGCoreSubcommandArgument;
+import cz.vitekform.rPGCore.commands.args.classes.RPGiveSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.enums.RPGCoreSubcommand;
 import cz.vitekform.rPGCore.listeners.*;
 import cz.vitekform.rPGCore.objects.*;
 import cz.vitekform.rPGCore.pluginUtils.PluginUpdater;
 import cz.vitekform.rPGCore.pluginUtils.ResourcePackGenerator;
 import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.kyori.adventure.key.Key;
@@ -125,6 +127,38 @@ public final class RPGCore extends JavaPlugin {
                                             })
                             )
                             .build(), "The main command for RPGCore.", List.of("rpg", "rpgc", "core")
+            );
+
+            commands.register(
+                    Commands.literal("rpgive")
+                            .then(
+                                    Commands.argument("id", new RPGiveSubcommandArgument())
+                                            .executes(
+                                                    ctx -> {
+                                                        String itemID = ctx.getArgument("id", String.class);
+                                                        if (ItemDictionary.items.containsKey(itemID)) {
+                                                            RPGItem item = ItemDictionary.items.get(itemID);
+                                                            if (ctx.getSource().getSender() instanceof Player p) {
+                                                                RPGPlayer pl = RPGCore.playerStorage.get(p.getUniqueId());
+                                                                if (pl != null) {
+                                                                    pl.giveItem(item);
+                                                                    ctx.getSource().getSender().sendMessage(Component.text("Given item " + itemID + " to " + p.getName() + ".", NamedTextColor.GREEN));
+                                                                } else {
+                                                                    ctx.getSource().getSender().sendMessage(Component.text("Player " + p.getName() + " is not a registered RPG player.", NamedTextColor.RED));
+                                                                }
+                                                            } else {
+                                                                ctx.getSource().getSender().sendMessage(Component.text("This command can only be used by players.", NamedTextColor.RED));
+                                                            }
+                                                        }
+                                                        else {
+                                                            ctx.getSource().getSender().sendMessage(Component.text("Item with ID " + itemID + " not found.", NamedTextColor.RED));
+                                                        }
+                                                        return Command.SINGLE_SUCCESS;
+                                                    }
+                                            )
+                            )
+                            .requires(css -> css.getSender().hasPermission("rpgcore.give") || css.getSender().hasPermission("rpgcore.admin"))
+                            .build()
             );
         });
 
