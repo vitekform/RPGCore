@@ -15,6 +15,111 @@
 # reqClass values: WARRIOR, MAGE, ARCHER, ANY, NONE
 
 items:
+  # Class selection items (for GUI)
+  warrior_class_item:
+    id: "warrior_class_item"
+    name: "Warrior"
+    nameColor: "RED"
+    material: IRON_SWORD
+    lore:
+      - "A strong and brave warrior."
+    loreColor: "GRAY"
+    reqLevel: 0
+    reqClass: ANY
+
+  archer_class_item:
+    id: "archer_class_item"
+    name: "Archer"
+    nameColor: "GREEN"
+    material: BOW
+    lore:
+      - "A skilled archer"
+    loreColor: "GRAY"
+    reqLevel: 0
+    reqClass: ANY
+
+  mage_class_item:
+    id: "mage_class_item"
+    name: "Mage"
+    nameColor: "BLUE"
+    material: BLAZE_ROD
+    lore:
+      - "A powerful mage."
+    loreColor: "GRAY"
+    reqLevel: 0
+    reqClass: ANY
+
+  # Attribute items (for GUI)
+  strength_attribute_item:
+    id: "strength_attribute_item"
+    name: "Strength"
+    nameColor: "RED"
+    material: IRON_SWORD
+    lore:
+      - "Strength increases your:"
+      - "Melee damage"
+      - "Carry weight"
+      - "And chance to block melee attacks"
+    loreColor: "RED"
+    reqLevel: 0
+    reqClass: ANY
+
+  dexterity_attribute_item:
+    id: "dexterity_attribute_item"
+    name: "Dexterity"
+    nameColor: "GREEN"
+    material: BOW
+    lore:
+      - "Dexterity increases your:"
+      - "Ranged damage"
+      - "Chance to dodge ranged attacks"
+      - "And chance to dodge melee attacks"
+    loreColor: "GREEN"
+    reqLevel: 0
+    reqClass: ANY
+
+  intelligence_attribute_item:
+    id: "intelligence_attribute_item"
+    name: "Intelligence"
+    nameColor: "AQUA"
+    material: AMETHYST_SHARD
+    lore:
+      - "Intelligence increases your:"
+      - "Maximum mana capacity"
+      - "Damage using spells (and healing)"
+      - "And decreases the chance of miscast"
+    loreColor: "AQUA"
+    reqLevel: 0
+    reqClass: ANY
+
+  endurance_attribute_item:
+    id: "endurance_attribute_item"
+    name: "Endurance"
+    nameColor: "WHITE"
+    material: IRON_CHESTPLATE
+    lore:
+      - "Endurance increases your:"
+      - "Max Health"
+      - "And max stamina"
+    loreColor: "WHITE"
+    reqLevel: 0
+    reqClass: ANY
+
+  vitality_attribute_item:
+    id: "vitality_attribute_item"
+    name: "Vitality"
+    nameColor: "RED"
+    material: GOLDEN_APPLE
+    lore:
+      - "Vitality increases your:"
+      - "Health regeneration"
+      - "Mana Regeneration"
+      - "And Stamina Regeneration"
+    loreColor: "RED"
+    reqLevel: 0
+    reqClass: ANY
+
+  # Adventurer equipment
   adventurer_sword:
     id: "adventurer_sword"
     name: "Adventurer's Sword"
