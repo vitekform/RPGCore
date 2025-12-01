@@ -98,7 +98,14 @@ public class RPGItem {
         
         // Apply custom model if customModelKey is set
         if (customModelKey != null && !customModelKey.isEmpty()) {
-            im.setItemModel(NamespacedKey.fromString(customModelKey));
+            try {
+                NamespacedKey modelKey = NamespacedKey.fromString(customModelKey);
+                if (modelKey != null) {
+                    im.setItemModel(modelKey);
+                }
+            } catch (IllegalArgumentException e) {
+                // Invalid key format, skip applying custom model
+            }
         }
 
         i.setItemMeta(im);

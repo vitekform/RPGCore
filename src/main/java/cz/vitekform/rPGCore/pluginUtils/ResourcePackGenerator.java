@@ -2,7 +2,6 @@ package cz.vitekform.rPGCore.pluginUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import cz.vitekform.rPGCore.ItemDictionary;
 import cz.vitekform.rPGCore.objects.RPGItem;
@@ -10,7 +9,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -103,14 +101,14 @@ public class ResourcePackGenerator {
     }
 
     private void ensureDirectories() {
-        if (!texturesFolder.exists()) {
-            texturesFolder.mkdirs();
+        if (!texturesFolder.exists() && !texturesFolder.mkdirs()) {
+            logger.warning("Failed to create textures directory: " + texturesFolder.getAbsolutePath());
         }
-        if (!modelsFolder.exists()) {
-            modelsFolder.mkdirs();
+        if (!modelsFolder.exists() && !modelsFolder.mkdirs()) {
+            logger.warning("Failed to create models directory: " + modelsFolder.getAbsolutePath());
         }
-        if (!generatedFolder.exists()) {
-            generatedFolder.mkdirs();
+        if (!generatedFolder.exists() && !generatedFolder.mkdirs()) {
+            logger.warning("Failed to create generated directory: " + generatedFolder.getAbsolutePath());
         }
     }
 
@@ -157,9 +155,7 @@ public class ResourcePackGenerator {
 
     private void processItem(ZipOutputStream zos, String itemKey, RPGItem item) throws IOException {
         String modelKeyName = itemKey.toLowerCase().replace(" ", "_");
-
-        // Set the customModelKey on the item so build() can use it
-        item.customModelKey = NAMESPACE + ":" + modelKeyName;
+        boolean modelAdded = false;
 
         // Handle texture
         if (item.texturePath != null) {
@@ -169,10 +165,23 @@ public class ResourcePackGenerator {
         // Handle model
         if (item.modelPath != null) {
             // Use custom model file
-            addCustomModel(zos, itemKey, item.modelPath);
+            if (addCustomModel(zos, itemKey, item.modelPath)) {
+                modelAdded = true;
+            }
         } else if (item.modelType != null) {
-            // Generate model based on type
-            generateModel(zos, itemKey, item);
+            // Validate that texturePath is present for model.type
+            if (item.texturePath == null) {
+                logger.warning("Item " + itemKey + " has model.type but no texture.path. Skipping model generation.");
+            } else {
+                // Generate model based on type
+                generateModel(zos, itemKey, item);
+                modelAdded = true;
+            }
+        }
+        
+        // Only set the customModelKey if a model was actually added
+        if (modelAdded) {
+            item.customModelKey = NAMESPACE + ":" + modelKeyName;
         }
     }
 
@@ -194,12 +203,12 @@ public class ResourcePackGenerator {
         logger.info("Added texture for " + itemKey + ": " + zipPath);
     }
 
-    private void addCustomModel(ZipOutputStream zos, String itemKey, String modelPath) throws IOException {
+    private boolean addCustomModel(ZipOutputStream zos, String itemKey, String modelPath) throws IOException {
         File modelFile = new File(modelsFolder, modelPath);
 
         if (!modelFile.exists()) {
             logger.warning("Model file not found for item " + itemKey + ": " + modelPath);
-            return;
+            return false;
         }
 
         String modelKeyName = itemKey.toLowerCase().replace(" ", "_");
@@ -210,13 +219,14 @@ public class ResourcePackGenerator {
         zos.closeEntry();
 
         logger.info("Added custom model for " + itemKey + ": " + zipPath);
+        return true;
     }
 
     private void generateModel(ZipOutputStream zos, String itemKey, RPGItem item) throws IOException {
         String modelKeyName = itemKey.toLowerCase().replace(" ", "_");
         String zipPath = "assets/" + NAMESPACE + "/models/item/" + modelKeyName + ".json";
 
-        JsonObject model = createModelJson(item.modelType, modelKeyName, item.texturePath);
+        JsonObject model = createModelJson(item.modelType, modelKeyName);
 
         zos.putNextEntry(new ZipEntry(zipPath));
         zos.write(gson.toJson(model).getBytes());
@@ -225,7 +235,7 @@ public class ResourcePackGenerator {
         logger.info("Generated model for " + itemKey + " (type: " + item.modelType + "): " + zipPath);
     }
 
-    private JsonObject createModelJson(String modelType, String itemKeyName, String texturePath) {
+    private JsonObject createModelJson(String modelType, String itemKeyName) {
         JsonObject model = new JsonObject();
 
         // Determine the parent based on model type
@@ -242,22 +252,10 @@ public class ResourcePackGenerator {
 
         model.addProperty("parent", parent);
 
-        // Add textures
+        // Add textures - the texture reference always points to our item's texture
+        // which is stored at the item key location in the resourcepack
         JsonObject textures = new JsonObject();
-        String textureRef;
-
-        if (texturePath != null) {
-            // Use custom texture (remove file extension)
-            String textureKey = texturePath;
-            if (textureKey.contains(".")) {
-                textureKey = textureKey.substring(0, textureKey.lastIndexOf('.'));
-            }
-            textureRef = NAMESPACE + ":item/" + itemKeyName;
-        } else {
-            // This shouldn't happen in practice since model.type without texture.path
-            // would use a placeholder, but we fall back to a default
-            textureRef = NAMESPACE + ":item/" + itemKeyName;
-        }
+        String textureRef = NAMESPACE + ":item/" + itemKeyName;
 
         textures.addProperty("layer0", textureRef);
         model.add("textures", textures);
