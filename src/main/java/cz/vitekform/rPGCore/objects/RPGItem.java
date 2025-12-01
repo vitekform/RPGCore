@@ -33,6 +33,12 @@ public class RPGItem {
 
     public int slotReq;
     public Material material;
+    
+    // Resource pack related properties
+    public String texturePath;  // Path to texture file in /plugins/RPGCore/items/textures/
+    public String modelPath;    // Path to model file in /plugins/RPGCore/items/models/
+    public String modelType;    // Model type for auto-generation (e.g., "handheld", "generated")
+    public String customModelKey; // The key used in the resourcepack for this item's model
 
     public RPGItem() {
         this.itemName = Component.newline();
@@ -49,6 +55,10 @@ public class RPGItem {
         this.material = Material.PAPER;
         this.durability = -1;
         this.max_durability = -1;
+        this.texturePath = null;
+        this.modelPath = null;
+        this.modelType = null;
+        this.customModelKey = null;
     }
 
     public ItemStack build() {
@@ -85,6 +95,11 @@ public class RPGItem {
         pdc.set(key_crit_chance, PersistentDataType.DOUBLE, critChance);
 
         im.setUnbreakable(true);
+        
+        // Apply custom model if customModelKey is set
+        if (customModelKey != null && !customModelKey.isEmpty()) {
+            im.setItemModel(NamespacedKey.fromString(customModelKey));
+        }
 
         i.setItemMeta(im);
 
