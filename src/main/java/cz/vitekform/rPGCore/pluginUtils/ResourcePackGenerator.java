@@ -179,10 +179,32 @@ public class ResourcePackGenerator {
             }
         }
         
-        // Only set the customModelKey if a model was actually added
+        // Only set the customModelKey and create item definition if a model was actually added
         if (modelAdded) {
             item.customModelKey = NAMESPACE + ":" + modelKeyName;
+            // Add item definition file for Minecraft 1.21.4+
+            addItemDefinition(zos, itemKey, modelKeyName);
         }
+    }
+
+    /**
+     * Creates an item definition JSON file required by Minecraft 1.21.4+.
+     * This file is stored at assets/<namespace>/items/<item_name>.json and references the model.
+     */
+    private void addItemDefinition(ZipOutputStream zos, String itemKey, String modelKeyName) throws IOException {
+        String zipPath = "assets/" + NAMESPACE + "/items/" + modelKeyName + ".json";
+
+        JsonObject itemDefinition = new JsonObject();
+        JsonObject model = new JsonObject();
+        model.addProperty("type", "minecraft:model");
+        model.addProperty("model", NAMESPACE + ":item/" + modelKeyName);
+        itemDefinition.add("model", model);
+
+        zos.putNextEntry(new ZipEntry(zipPath));
+        zos.write(gson.toJson(itemDefinition).getBytes());
+        zos.closeEntry();
+
+        logger.info("Added item definition for " + itemKey + ": " + zipPath);
     }
 
     private void addTexture(ZipOutputStream zos, String itemKey, String texturePath) throws IOException {
