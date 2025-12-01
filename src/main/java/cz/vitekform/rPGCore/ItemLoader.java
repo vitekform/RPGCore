@@ -141,6 +141,11 @@ public class ItemLoader {
         item.critChance = section.getDouble("critChance", 0);
         item.max_durability = section.getInt("max_durability", -1);
         item.slotReq = section.getInt("slotReq", -1);
+        
+        // Resource pack related attributes
+        item.texturePath = section.getString("texture.path", null);
+        item.modelPath = section.getString("model.path", null);
+        item.modelType = section.getString("model.type", null);
 
         // Food-specific attributes
         if (item instanceof RPGFoodItem foodItem) {

@@ -3,6 +3,13 @@
 # Optional attributes: reqLevel, reqClass, attack, attackSpeed, defense, health, speed, mana, critChance, max_durability, slotReq, lore
 # For food items, add: foodAmount, saturationAmount
 #
+# Custom Textures and Models:
+#   texture.path: Path to texture file in /plugins/RPGCore/items/textures/ (e.g., "sword.png")
+#   model.path: Path to custom model JSON in /plugins/RPGCore/items/models/ (e.g., "sword.json")
+#   model.type: Auto-generate model based on type. Options: handheld, handheld_rod, generated, bow, crossbow, shield, trident
+#   Note: If neither model.path nor model.type is present, the item uses vanilla model.
+#   Note: texture.path is required when using model.type for auto-generated models.
+#
 # slotReq values:
 #   -1 = Any
 #   0 = Main Hand
