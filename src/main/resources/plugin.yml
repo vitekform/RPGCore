@@ -12,3 +12,6 @@ commands:
       - rpg
       - rpgc
       - core
+  rpgive:
+    description: Give item to player
+    usage: /rpgive <item>
