@@ -103,6 +103,10 @@ public final class RPGCore extends JavaPlugin {
             getLogger().info(ChatColor.RED + "You are not running the latest version of RPGCore. Please update to build " + PluginUpdater.latestBuild(PluginUpdater.buildChannelString()) + " from " + PluginUpdater.buildChannelString() + " Build Channel. Using /rpg update");
         }
 
+        // Load items from items.yml
+        ItemLoader itemLoader = new ItemLoader(this);
+        itemLoader.loadItems();
+
         final LifecycleEventManager<Plugin> manager = this.getLifecycleManager();
         manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             final Commands commands = event.registrar();
@@ -229,9 +233,9 @@ public final class RPGCore extends JavaPlugin {
                                 gui.setItem(i, nothing);
                             }
 
-                            gui.setItem(10, ItemDictionary.warriorClassItem().build());
-                            gui.setItem(13, ItemDictionary.archerClassItem().build());
-                            gui.setItem(16, ItemDictionary.mageClassItem().build());
+                            gui.setItem(10, ItemDictionary.getItem("warrior_class_item").build());
+                            gui.setItem(13, ItemDictionary.getItem("archer_class_item").build());
+                            gui.setItem(16, ItemDictionary.getItem("mage_class_item").build());
 
                             p.openInventory(gui);
                         }
@@ -255,11 +259,11 @@ public final class RPGCore extends JavaPlugin {
                             gui.setItem(i, nothing);
                         }
 
-                        gui.setItem(9, ItemDictionary.strengthAttributeItem().build());
-                        gui.setItem(11, ItemDictionary.dexterityAttributeItem().build());
-                        gui.setItem(13, ItemDictionary.intelligenceAttributeItem().build());
-                        gui.setItem(15, ItemDictionary.enduranceAttributeItem().build());
-                        gui.setItem(17, ItemDictionary.vitalityAttributeItem().build());
+                        gui.setItem(9, ItemDictionary.getItem("strength_attribute_item").build());
+                        gui.setItem(11, ItemDictionary.getItem("dexterity_attribute_item").build());
+                        gui.setItem(13, ItemDictionary.getItem("intelligence_attribute_item").build());
+                        gui.setItem(15, ItemDictionary.getItem("endurance_attribute_item").build());
+                        gui.setItem(17, ItemDictionary.getItem("vitality_attribute_item").build());
                         gui.setItem(26, ItemDictionary.attributePointsItem(playerStorage.get(p.getUniqueId())).build());
 
                         p.openInventory(gui);
@@ -280,12 +284,12 @@ public final class RPGCore extends JavaPlugin {
                 if (ctx.getSource().getSender() instanceof Player p) {
                     RPGPlayer pl = playerStorage.get(p.getUniqueId());
                     if (pl != null) {
-                        pl.giveItem(ItemDictionary.adventurerSword());
-                        pl.giveItem(ItemDictionary.adventurerHelmet());
-                        pl.giveItem(ItemDictionary.adventurerChestplate());
-                        pl.giveItem(ItemDictionary.adventurerLeggings());
-                        pl.giveItem(ItemDictionary.adventurerBoots());
-                        pl.giveItem(ItemDictionary.staleBread(), 5);
+                        pl.giveItem(ItemDictionary.getItem("adventurer_sword"));
+                        pl.giveItem(ItemDictionary.getItem("adventurer_helmet"));
+                        pl.giveItem(ItemDictionary.getItem("adventurer_chestplate"));
+                        pl.giveItem(ItemDictionary.getItem("adventurer_leggings"));
+                        pl.giveItem(ItemDictionary.getItem("adventurer_boots"));
+                        pl.giveItem(ItemDictionary.getItem("stale_bread"), 5);
                         ctx.getSource().getSender().sendMessage(Component.text("You have been given an Adventurer's kit!", NamedTextColor.GREEN));
                     } else {
                         ctx.getSource().getSender().sendMessage(Component.text("You are not a registered RPG player.", NamedTextColor.RED));
