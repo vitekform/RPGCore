@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import cz.vitekform.rPGCore.ItemDictionary;
 import cz.vitekform.rPGCore.objects.RPGItem;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
@@ -26,11 +28,15 @@ import java.util.zip.ZipOutputStream;
  * - model.type: Auto-generate model based on type (e.g., "handheld", "generated")
  * <p>
  * If neither model.path nor model.type is present, vanilla model is used.
+ * <p>
+ * The generated resource pack is automatically uploaded to catbox.moe and the
+ * download URL and SHA-1 hash are stored for player resource pack loading.
  */
 public class ResourcePackGenerator {
 
     private static final String NAMESPACE = "rpgcore";
     private static final int PACK_FORMAT = 46; // Minecraft 1.21.4
+    private static final String RESOURCEPACK_CONFIG = "resourcepack.yml";
 
     private final JavaPlugin plugin;
     private final Logger logger;
@@ -39,6 +45,12 @@ public class ResourcePackGenerator {
     private final File modelsFolder;
     private final File generatedFolder;
     private final Gson gson;
+    private final CatboxUploader uploader;
+
+    // Stored resource pack info for player loading
+    private static String resourcePackUrl;
+    private static byte[] resourcePackHash;
+    private static boolean resourcePackReady = false;
 
     public ResourcePackGenerator(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -48,10 +60,36 @@ public class ResourcePackGenerator {
         this.modelsFolder = new File(dataFolder, "items/models");
         this.generatedFolder = new File(dataFolder, "generated");
         this.gson = new GsonBuilder().setPrettyPrinting().create();
+        this.uploader = new CatboxUploader(logger);
+    }
+
+    /**
+     * Gets the resource pack download URL.
+     * @return The URL or null if not available
+     */
+    public static String getResourcePackUrl() {
+        return resourcePackUrl;
+    }
+
+    /**
+     * Gets the resource pack SHA-1 hash as bytes.
+     * @return The hash bytes or null if not available
+     */
+    public static byte[] getResourcePackHash() {
+        return resourcePackHash;
+    }
+
+    /**
+     * Checks if the resource pack is ready to be sent to players.
+     * @return true if ready, false otherwise
+     */
+    public static boolean isResourcePackReady() {
+        return resourcePackReady;
     }
 
     /**
      * Generates the resource pack for all loaded items.
+     * Also handles uploading to catbox.moe and verifying the stored URL.
      */
     public void generate() {
         logger.info("Starting resource pack generation...");
@@ -59,11 +97,16 @@ public class ResourcePackGenerator {
         // Ensure directories exist
         ensureDirectories();
 
+        // Load stored resource pack config
+        File configFile = new File(dataFolder, RESOURCEPACK_CONFIG);
+        FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+
         // Collect items that need custom models/textures
         Map<String, RPGItem> itemsWithCustomAssets = collectCustomAssetItems();
 
         if (itemsWithCustomAssets.isEmpty()) {
             logger.info("No items with custom textures/models found. Skipping resource pack generation.");
+            resourcePackReady = false;
             return;
         }
 
@@ -76,14 +119,17 @@ public class ResourcePackGenerator {
         try {
             generateResourcePack(itemsWithCustomAssets, tempZip);
 
+            String newHash = calculateFileHash(tempZip);
+            boolean packChanged = true;
+
             // Check if we need to replace the existing pack
             if (finalZip.exists()) {
                 String existingHash = calculateFileHash(finalZip);
-                String newHash = calculateFileHash(tempZip);
 
                 if (existingHash.equals(newHash)) {
                     logger.info("Resource pack unchanged. Keeping existing file.");
                     Files.delete(tempZip.toPath());
+                    packChanged = false;
                 } else {
                     logger.info("Resource pack changed. Replacing existing file.");
                     Files.move(tempZip.toPath(), finalZip.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -94,10 +140,98 @@ public class ResourcePackGenerator {
 
             logger.info("Resource pack generated at: " + finalZip.getAbsolutePath());
 
+            // Calculate SHA-1 hash for the final zip (Minecraft uses SHA-1)
+            String sha1Hash = calculateFileSha1(finalZip);
+            
+            // Check if we have a stored URL and if it's still valid
+            String storedUrl = config.getString("url");
+            String storedHash = config.getString("sha1");
+
+            boolean needsUpload = packChanged || storedUrl == null || storedHash == null;
+            
+            // If pack didn't change but we have stored info, verify the URL is still accessible
+            if (!needsUpload && storedUrl != null && storedHash != null) {
+                if (storedHash.equals(sha1Hash) && uploader.verifyUrl(storedUrl)) {
+                    logger.info("Stored resource pack URL is still valid. Using existing upload.");
+                    resourcePackUrl = storedUrl;
+                    resourcePackHash = hexStringToByteArray(sha1Hash);
+                    resourcePackReady = true;
+                    return;
+                } else {
+                    logger.info("Stored resource pack URL is invalid or hash mismatch. Re-uploading...");
+                    needsUpload = true;
+                }
+            }
+
+            // Upload to catbox.moe if needed
+            if (needsUpload) {
+                logger.info("Uploading resource pack to catbox.moe...");
+                String uploadedUrl = uploader.upload(finalZip);
+                
+                if (uploadedUrl != null) {
+                    // Store the URL and hash
+                    config.set("url", uploadedUrl);
+                    config.set("sha1", sha1Hash);
+                    config.save(configFile);
+                    
+                    resourcePackUrl = uploadedUrl;
+                    resourcePackHash = hexStringToByteArray(sha1Hash);
+                    resourcePackReady = true;
+                    
+                    logger.info("Resource pack uploaded successfully!");
+                    logger.info("URL: " + uploadedUrl);
+                    logger.info("SHA-1: " + sha1Hash);
+                } else {
+                    logger.severe("Failed to upload resource pack to catbox.moe!");
+                    resourcePackReady = false;
+                }
+            }
+
         } catch (Exception e) {
             logger.severe("Failed to generate resource pack: " + e.getMessage());
             e.printStackTrace();
+            resourcePackReady = false;
         }
+    }
+
+    /**
+     * Calculates the SHA-1 hash of a file (required by Minecraft for resource packs).
+     */
+    private String calculateFileSha1(File file) throws IOException, NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                digest.update(buffer, 0, bytesRead);
+            }
+        }
+        byte[] hashBytes = digest.digest();
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Converts a hex string to a byte array.
+     */
+    private static byte[] hexStringToByteArray(String hex) {
+        if (hex == null || hex.isEmpty()) {
+            return new byte[0];
+        }
+        // Ensure even length
+        if (hex.length() % 2 != 0) {
+            hex = "0" + hex;
+        }
+        int len = hex.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
+                    + Character.digit(hex.charAt(i + 1), 16));
+        }
+        return data;
     }
 
     private void ensureDirectories() {
