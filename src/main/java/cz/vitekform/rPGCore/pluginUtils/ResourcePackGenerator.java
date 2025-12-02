@@ -2,6 +2,7 @@ package cz.vitekform.rPGCore.pluginUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import cz.vitekform.rPGCore.ItemDictionary;
 import cz.vitekform.rPGCore.objects.RPGItem;
@@ -256,7 +257,7 @@ public class ResourcePackGenerator {
 
         for (Map.Entry<String, RPGItem> entry : ItemDictionary.items.entrySet()) {
             RPGItem item = entry.getValue();
-            // Item needs custom assets if it has either model.path, model.type, or armor texture
+            // Item needs custom assets if it has modelPath, modelType, or armorTexturePath defined
             if (item.modelPath != null || item.modelType != null || item.armorTexturePath != null) {
                 result.put(entry.getKey(), item);
             }
@@ -484,7 +485,7 @@ public class ResourcePackGenerator {
         }
         
         // Create the layer array with texture reference
-        com.google.gson.JsonArray layerArray = new com.google.gson.JsonArray();
+        JsonArray layerArray = new JsonArray();
         JsonObject layerEntry = new JsonObject();
         layerEntry.addProperty("texture", NAMESPACE + ":" + armorKeyName);
         layerArray.add(layerEntry);
