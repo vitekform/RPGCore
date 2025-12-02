@@ -1,11 +1,15 @@
 package cz.vitekform.rPGCore.objects;
 
 import cz.vitekform.rPGCore.RPGCore;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.Equippable;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -39,6 +43,11 @@ public class RPGItem {
     public String modelPath;    // Path to model file in /plugins/RPGCore/items/models/
     public String modelType;    // Model type for auto-generation (e.g., "handheld", "generated")
     public String customModelKey; // The key used in the resourcepack for this item's model
+    
+    // Armor-specific resource pack properties
+    public String armorTexturePath;    // Path to armor texture file in /plugins/RPGCore/items/textures/armor/
+    public String armorLayerType;      // Layer type: "humanoid" (helmet, chestplate, boots) or "humanoid_leggings" (leggings)
+    public String equipmentModelKey;   // The key used for the equipment model reference
 
     public RPGItem() {
         this.itemName = Component.newline();
@@ -59,6 +68,9 @@ public class RPGItem {
         this.modelPath = null;
         this.modelType = null;
         this.customModelKey = null;
+        this.armorTexturePath = null;
+        this.armorLayerType = null;
+        this.equipmentModelKey = null;
     }
 
     public ItemStack build() {
@@ -109,6 +121,22 @@ public class RPGItem {
         }
 
         i.setItemMeta(im);
+        
+        // Apply equippable component for custom armor textures when worn
+        if (equipmentModelKey != null && !equipmentModelKey.isEmpty()) {
+            try {
+                Key assetKey = Key.key(equipmentModelKey);
+                EquipmentSlot slot = getEquipmentSlotFromSlotReq();
+                if (slot != null) {
+                    Equippable equippable = Equippable.equippable(slot)
+                            .assetId(assetKey)
+                            .build();
+                    i.setData(DataComponentTypes.EQUIPPABLE, equippable);
+                }
+            } catch (IllegalArgumentException e) {
+                // Invalid key format, skip applying equippable component
+            }
+        }
 
         return i;
     }
@@ -117,6 +145,22 @@ public class RPGItem {
         ItemStack itemStack = build();
         itemStack.setAmount(amount);
         return itemStack;
+    }
+
+    /**
+     * Maps the slotReq value to the corresponding EquipmentSlot.
+     * @return The EquipmentSlot or null if not applicable
+     */
+    private EquipmentSlot getEquipmentSlotFromSlotReq() {
+        return switch (slotReq) {
+            case 0 -> EquipmentSlot.HAND;
+            case 1 -> EquipmentSlot.HEAD;
+            case 2 -> EquipmentSlot.CHEST;
+            case 3 -> EquipmentSlot.LEGS;
+            case 4 -> EquipmentSlot.FEET;
+            case 5 -> EquipmentSlot.OFF_HAND;
+            default -> null;
+        };
     }
 
     private String getNormalName(RPGClass rpgClass) {
