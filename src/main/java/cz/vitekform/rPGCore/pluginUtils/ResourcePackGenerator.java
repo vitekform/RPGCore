@@ -43,6 +43,7 @@ public class ResourcePackGenerator {
     private final File dataFolder;
     private final File texturesFolder;
     private final File modelsFolder;
+    private final File armorTexturesFolder;
     private final File generatedFolder;
     private final Gson gson;
     private final CatboxUploader uploader;
@@ -58,6 +59,7 @@ public class ResourcePackGenerator {
         this.dataFolder = plugin.getDataFolder();
         this.texturesFolder = new File(dataFolder, "items/textures");
         this.modelsFolder = new File(dataFolder, "items/models");
+        this.armorTexturesFolder = new File(dataFolder, "items/textures/armor");
         this.generatedFolder = new File(dataFolder, "generated");
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.uploader = new CatboxUploader(logger);
@@ -241,6 +243,9 @@ public class ResourcePackGenerator {
         if (!modelsFolder.exists() && !modelsFolder.mkdirs()) {
             logger.warning("Failed to create models directory: " + modelsFolder.getAbsolutePath());
         }
+        if (!armorTexturesFolder.exists() && !armorTexturesFolder.mkdirs()) {
+            logger.warning("Failed to create armor textures directory: " + armorTexturesFolder.getAbsolutePath());
+        }
         if (!generatedFolder.exists() && !generatedFolder.mkdirs()) {
             logger.warning("Failed to create generated directory: " + generatedFolder.getAbsolutePath());
         }
@@ -251,8 +256,8 @@ public class ResourcePackGenerator {
 
         for (Map.Entry<String, RPGItem> entry : ItemDictionary.items.entrySet()) {
             RPGItem item = entry.getValue();
-            // Item needs custom assets if it has either model.path or model.type (and texture.path for model.type)
-            if (item.modelPath != null || item.modelType != null) {
+            // Item needs custom assets if it has either model.path, model.type, or armor texture
+            if (item.modelPath != null || item.modelType != null || item.armorTexturePath != null) {
                 result.put(entry.getKey(), item);
             }
         }
@@ -318,6 +323,15 @@ public class ResourcePackGenerator {
             item.customModelKey = NAMESPACE + ":" + modelKeyName;
             // Add item definition file for Minecraft 1.21.4+
             addItemDefinition(zos, itemKey, modelKeyName);
+        }
+        
+        // Handle armor textures (for when armor is worn)
+        if (item.armorTexturePath != null) {
+            if (addArmorTexture(zos, itemKey, item)) {
+                // Create equipment model and set the equipment model key
+                addEquipmentModel(zos, itemKey, item);
+                item.equipmentModelKey = NAMESPACE + ":" + modelKeyName;
+            }
         }
     }
 
@@ -417,6 +431,72 @@ public class ResourcePackGenerator {
         model.add("textures", textures);
 
         return model;
+    }
+
+    /**
+     * Adds an armor texture to the resource pack for when the armor is worn.
+     * Armor textures go in assets/<namespace>/textures/entity/equipment/<layer_type>/<armor_name>.png
+     * where layer_type is either "humanoid" (for helmet, chestplate, boots) or "humanoid_leggings" (for leggings).
+     */
+    private boolean addArmorTexture(ZipOutputStream zos, String itemKey, RPGItem item) throws IOException {
+        File textureFile = new File(armorTexturesFolder, item.armorTexturePath);
+
+        if (!textureFile.exists()) {
+            logger.warning("Armor texture file not found for item " + itemKey + ": " + item.armorTexturePath);
+            return false;
+        }
+
+        String armorKeyName = itemKey.toLowerCase().replace(" ", "_");
+        
+        // Determine layer type - default to humanoid if not specified
+        String layerType = item.armorLayerType != null ? item.armorLayerType.toLowerCase() : "humanoid";
+        if (!layerType.equals("humanoid") && !layerType.equals("humanoid_leggings")) {
+            logger.warning("Invalid armor layer type for item " + itemKey + ": " + layerType + ". Using 'humanoid'.");
+            layerType = "humanoid";
+        }
+
+        String zipPath = "assets/" + NAMESPACE + "/textures/entity/equipment/" + layerType + "/" + armorKeyName + getFileExtension(item.armorTexturePath);
+
+        zos.putNextEntry(new ZipEntry(zipPath));
+        Files.copy(textureFile.toPath(), zos);
+        zos.closeEntry();
+
+        logger.info("Added armor texture for " + itemKey + ": " + zipPath);
+        return true;
+    }
+
+    /**
+     * Creates an equipment model JSON file that defines how armor looks when worn.
+     * Equipment models go in assets/<namespace>/equipment/<armor_name>.json
+     * The model references the armor texture in the entity/equipment folder.
+     */
+    private void addEquipmentModel(ZipOutputStream zos, String itemKey, RPGItem item) throws IOException {
+        String armorKeyName = itemKey.toLowerCase().replace(" ", "_");
+        String zipPath = "assets/" + NAMESPACE + "/equipment/" + armorKeyName + ".json";
+
+        JsonObject equipmentModel = new JsonObject();
+        JsonObject layers = new JsonObject();
+        
+        // Determine layer type - default to humanoid if not specified
+        String layerType = item.armorLayerType != null ? item.armorLayerType.toLowerCase() : "humanoid";
+        if (!layerType.equals("humanoid") && !layerType.equals("humanoid_leggings")) {
+            layerType = "humanoid";
+        }
+        
+        // Create the layer array with texture reference
+        com.google.gson.JsonArray layerArray = new com.google.gson.JsonArray();
+        JsonObject layerEntry = new JsonObject();
+        layerEntry.addProperty("texture", NAMESPACE + ":" + armorKeyName);
+        layerArray.add(layerEntry);
+        
+        layers.add(layerType, layerArray);
+        equipmentModel.add("layers", layers);
+
+        zos.putNextEntry(new ZipEntry(zipPath));
+        zos.write(gson.toJson(equipmentModel).getBytes());
+        zos.closeEntry();
+
+        logger.info("Added equipment model for " + itemKey + ": " + zipPath);
     }
 
     private String getFileExtension(String filename) {

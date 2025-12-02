@@ -3,12 +3,20 @@
 # Optional attributes: reqLevel, reqClass, attack, attackSpeed, defense, health, speed, mana, critChance, max_durability, slotReq, lore
 # For food items, add: foodAmount, saturationAmount
 #
-# Custom Textures and Models:
+# Custom Textures and Models (for inventory/hand display):
 #   texture.path: Path to texture file in /plugins/RPGCore/items/textures/ (e.g., "sword.png")
 #   model.path: Path to custom model JSON in /plugins/RPGCore/items/models/ (e.g., "sword.json")
 #   model.type: Auto-generate model based on type. Options: handheld, handheld_rod, generated, bow, crossbow, shield, trident
 #   Note: If neither model.path nor model.type is present, the item uses vanilla model.
 #   Note: texture.path is required when using model.type for auto-generated models.
+#
+# Custom Armor Textures (for when armor is worn on player):
+#   armor.texture.path: Path to armor texture file in /plugins/RPGCore/items/textures/armor/ (e.g., "adventurer_helmet.png")
+#   armor.layer.type: The layer type for the armor texture.
+#     - "humanoid" for helmet, chestplate, and boots
+#     - "humanoid_leggings" for leggings
+#   Note: Armor textures are displayed on the player model when the armor is equipped.
+#   Note: The texture file should be properly formatted for Minecraft armor rendering.
 #
 # slotReq values:
 #   -1 = Any

@@ -146,6 +146,10 @@ public class ItemLoader {
         item.texturePath = section.getString("texture.path", null);
         item.modelPath = section.getString("model.path", null);
         item.modelType = section.getString("model.type", null);
+        
+        // Armor-specific resource pack attributes
+        item.armorTexturePath = section.getString("armor.texture.path", null);
+        item.armorLayerType = section.getString("armor.layer.type", null);
 
         // Food-specific attributes
         if (item instanceof RPGFoodItem foodItem) {
