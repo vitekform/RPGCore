@@ -2,6 +2,9 @@ package cz.vitekform.rPGCore;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
+import cz.vitekform.rPGCore.api.RPGCoreAPI;
+import cz.vitekform.rPGCore.api.RPGCoreAPIImpl;
+import cz.vitekform.rPGCore.api.RPGCoreAPIProvider;
 import cz.vitekform.rPGCore.commands.args.classes.RPGCoreSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.classes.RPGiveSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.enums.RPGCoreSubcommand;
@@ -44,6 +47,8 @@ public final class RPGCore extends JavaPlugin {
 
     public static final Map<UUID, RPGPlayer> playerStorage = new HashMap<>();
     public static final Map<UUID, RPGEntity> entityStorage = new HashMap<>();
+    
+    private RPGCoreAPI api;
 
    public static List<Component> fancyText(List<Component> original) {
     Map<Character, Character> charMap = Map.ofEntries(
@@ -105,6 +110,11 @@ public final class RPGCore extends JavaPlugin {
         } else {
             getLogger().info(ChatColor.RED + "You are not running the latest version of RPGCore. Please update to build " + PluginUpdater.latestBuild(PluginUpdater.buildChannelString()) + " from " + PluginUpdater.buildChannelString() + " Build Channel. Using /rpg update");
         }
+        
+        // Initialize the public API
+        api = new RPGCoreAPIImpl(this);
+        RPGCoreAPIProvider.setAPI(api);
+        getLogger().info(ChatColor.GREEN + "RPGCore API initialized and ready for use by other plugins.");
 
         // Load items from items.yml
         ItemLoader itemLoader = new ItemLoader(this);
@@ -472,5 +482,15 @@ public final class RPGCore extends JavaPlugin {
                 }
             }
         }.runTaskTimer(RPGCore.getPlugin(RPGCore.class), 10, 20);
+    }
+    
+    /**
+     * Get the public API instance for RPGCore.
+     * Other plugins can use this to access RPGCore functionality.
+     * 
+     * @return The RPGCoreAPI instance
+     */
+    public RPGCoreAPI getAPI() {
+        return api;
     }
 }
