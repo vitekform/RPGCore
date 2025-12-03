@@ -40,18 +40,29 @@ public class RPGCoreAPIImpl implements RPGCoreAPI {
     
     @Override
     public boolean registerItem(String itemId, RPGItem item) {
-        if (ItemDictionary.items.containsKey(itemId)) {
-            return false;
+        // Synchronize to prevent race conditions when checking and inserting
+        synchronized (ItemDictionary.items) {
+            synchronized (ItemDictionary.itemRegistry) {
+                // Check if itemId already exists
+                if (ItemDictionary.items.containsKey(itemId)) {
+                    return false;
+                }
+                
+                // Generate UUID for the item
+                UUID itemUUID = UUID.nameUUIDFromBytes(itemId.getBytes(StandardCharsets.UTF_8));
+                
+                // Check for UUID collision (though unlikely with name-based UUIDs)
+                if (ItemDictionary.itemRegistry.containsKey(itemUUID)) {
+                    return false;
+                }
+                
+                // Register in both maps
+                ItemDictionary.items.put(itemId, item);
+                ItemDictionary.itemRegistry.put(itemUUID, item);
+                
+                return true;
+            }
         }
-        
-        // Generate UUID for the item
-        UUID itemUUID = UUID.nameUUIDFromBytes(itemId.getBytes(StandardCharsets.UTF_8));
-        
-        // Register in both maps
-        ItemDictionary.items.put(itemId, item);
-        ItemDictionary.itemRegistry.put(itemUUID, item);
-        
-        return true;
     }
     
     @Override
@@ -117,13 +128,18 @@ public class RPGCoreAPIImpl implements RPGCoreAPI {
     
     @Override
     public void reloadItems() {
-        // Clear existing items
-        ItemDictionary.items.clear();
-        ItemDictionary.itemRegistry.clear();
-        
-        // Reload items from configuration
-        ItemLoader itemLoader = new ItemLoader(plugin);
-        itemLoader.loadItems();
+        // Synchronize on the ItemDictionary maps to prevent race conditions
+        synchronized (ItemDictionary.items) {
+            synchronized (ItemDictionary.itemRegistry) {
+                // Clear existing items
+                ItemDictionary.items.clear();
+                ItemDictionary.itemRegistry.clear();
+                
+                // Reload items from configuration
+                ItemLoader itemLoader = new ItemLoader(plugin);
+                itemLoader.loadItems();
+            }
+        }
     }
     
     @Override
