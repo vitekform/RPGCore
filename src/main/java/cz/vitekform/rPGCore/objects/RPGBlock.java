@@ -65,8 +65,9 @@ public class RPGBlock {
      * @return true if the block can be mined with this item
      */
     public boolean canBeMinedWith(ItemStack item) {
-        if (item == null) {
-            return minableWithMat.isEmpty() && minableWithItems.isEmpty();
+        // If no restrictions are defined, block can be mined with anything
+        if ((minableWithMat.isEmpty() && minableWithItems.isEmpty()) || item == null) {
+            return true;
         }
         
         // Check if vanilla material matches
@@ -76,7 +77,8 @@ public class RPGBlock {
         
         // Check if RPGItem matches
         // TODO: Implement RPGItem detection from ItemStack
-        // For now, return true if material matches OR if lists are empty (minable with anything)
-        return minableWithMat.isEmpty() && minableWithItems.isEmpty();
+        // This would check if the item is an RPGItem and if its key is in minableWithItems
+        
+        return false;
     }
 }

@@ -18,10 +18,18 @@
 # Minable With:
 #   minableWith.materials: List of vanilla materials that can mine this block (e.g., DIAMOND_PICKAXE)
 #   minableWith.items: List of RPG item keys that can mine this block
+#   Note: If both lists are empty, the block can be mined with any tool
 #
 # Drops:
 #   drops.materials: List of vanilla materials to drop (e.g., COBBLESTONE)
 #   drops.items: List of RPG item keys to drop
+#
+# IMPORTANT: Block State Configuration
+#   When using custom textures/models with NOTE_BLOCK, you must manually configure the blockstate
+#   file to map note/instrument combinations to your custom models. The resource pack generator
+#   creates the models and textures but does not modify the note_block.json blockstate file to
+#   avoid conflicts with vanilla blocks and other plugins. You can use tools like BlockBench or
+#   manually create/edit the assets/minecraft/blockstates/note_block.json file in your resource pack.
 
 blocks:
   # Example custom ore block

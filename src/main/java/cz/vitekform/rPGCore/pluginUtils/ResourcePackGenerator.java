@@ -565,7 +565,7 @@ public class ResourcePackGenerator {
     
     /**
      * Processes a block for the resource pack.
-     * Handles textures, models, and block state definitions.
+     * Handles textures and models. Block states need to be configured manually or via external tools.
      */
     private void processBlock(ZipOutputStream zos, String blockKey, RPGBlock block) throws IOException {
         String modelKeyName = blockKey.toLowerCase().replace(" ", "_");
@@ -593,11 +593,11 @@ public class ResourcePackGenerator {
             }
         }
         
-        // Only set the customModelKey if a model was actually added
+        // Set the customModelKey if a model was actually added
         if (modelAdded) {
             block.customModelKey = NAMESPACE + ":" + modelKeyName;
-            // Add blockstate definition for note_block with different properties
-            addBlockStateDefinition(zos, block);
+            logger.info("Block " + blockKey + " model available at: " + block.customModelKey);
+            logger.info("Note: Blockstate definitions for note_block must be configured separately to map note/instrument to this model.");
         }
     }
     
@@ -702,38 +702,5 @@ public class ResourcePackGenerator {
         model.add("textures", textures);
 
         return model;
-    }
-    
-    /**
-     * Adds a blockstate definition for note blocks to map block state values to models.
-     * Note blocks have properties like instrument and note that we can use.
-     */
-    private void addBlockStateDefinition(ZipOutputStream zos, RPGBlock block) throws IOException {
-        // For note blocks, we use the "note" property (0-24) and "instrument" property
-        // This gives us up to 25 * 16 = 400 different block states
-        String zipPath = "assets/minecraft/blockstates/note_block.json";
-        
-        // We need to read existing blockstate if it exists, or create a new one
-        // For simplicity, we'll append our block to variants
-        // In a real implementation, you'd merge with existing definitions
-        
-        JsonObject blockState = new JsonObject();
-        JsonObject variants = new JsonObject();
-        
-        // Create a variant key using instrument and note properties
-        // Example: "instrument=harp,note=0"
-        String variantKey = "instrument=harp,note=" + block.blockStateValue;
-        
-        JsonObject variantValue = new JsonObject();
-        variantValue.addProperty("model", block.customModelKey);
-        variants.add(variantKey, variantValue);
-        
-        blockState.add("variants", variants);
-        
-        zos.putNextEntry(new ZipEntry(zipPath));
-        zos.write(gson.toJson(blockState).getBytes());
-        zos.closeEntry();
-        
-        logger.info("Added blockstate definition for block (note=" + block.blockStateValue + ")");
     }
 }

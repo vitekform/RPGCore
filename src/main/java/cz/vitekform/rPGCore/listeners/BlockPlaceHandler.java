@@ -50,9 +50,10 @@ public class BlockPlaceHandler implements Listener {
         if (rpgBlock.blockType == Material.NOTE_BLOCK) {
             placedBlock.setType(Material.NOTE_BLOCK);
             
-            // Set the note value to match the RPGBlock's state
+            // Set the note value to match the RPGBlock's state (0-24)
             if (placedBlock.getBlockData() instanceof NoteBlock noteBlock) {
-                noteBlock.setNote(org.bukkit.Note.natural(0, org.bukkit.Note.Tone.values()[rpgBlock.blockStateValue % 7]));
+                int noteValue = Math.min(Math.max(rpgBlock.blockStateValue, 0), 24);
+                noteBlock.setNote(new org.bukkit.Note(noteValue));
                 placedBlock.setBlockData(noteBlock);
             }
         } else {
