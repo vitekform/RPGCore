@@ -20,6 +20,8 @@ import org.bukkit.NamespacedKey;
  */
 public class BlockPlaceHandler implements Listener {
 
+    private static final int MAX_NOTE_VALUE = 24;
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
         ItemStack item = event.getItemInHand();
@@ -52,7 +54,7 @@ public class BlockPlaceHandler implements Listener {
             
             // Set the note value to match the RPGBlock's state (0-24)
             if (placedBlock.getBlockData() instanceof NoteBlock noteBlock) {
-                int noteValue = Math.min(Math.max(rpgBlock.blockStateValue, 0), 24);
+                int noteValue = Math.min(Math.max(rpgBlock.blockStateValue, 0), MAX_NOTE_VALUE);
                 noteBlock.setNote(new org.bukkit.Note(noteValue));
                 placedBlock.setBlockData(noteBlock);
             }

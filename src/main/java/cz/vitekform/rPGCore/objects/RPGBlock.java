@@ -66,8 +66,13 @@ public class RPGBlock {
      */
     public boolean canBeMinedWith(ItemStack item) {
         // If no restrictions are defined, block can be mined with anything
-        if ((minableWithMat.isEmpty() && minableWithItems.isEmpty()) || item == null) {
+        if (minableWithMat.isEmpty() && minableWithItems.isEmpty()) {
             return true;
+        }
+        
+        // Null item means bare hand - only allowed if no restrictions
+        if (item == null) {
+            return false;
         }
         
         // Check if vanilla material matches
