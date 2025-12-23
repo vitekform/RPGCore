@@ -1,0 +1,69 @@
+# RPGCore Blocks Configuration
+# Each block must have: name, material
+# Optional attributes: blockStateValue, hardness, resistance, minableWith, drops
+#
+# Custom Textures and Models:
+#   texture.path: Path to texture file in /plugins/RPGCore/blocks/textures/ (e.g., "copper_ore.png")
+#   model.path: Path to custom model JSON in /plugins/RPGCore/blocks/models/ (e.g., "copper_ore.json")
+#   model.type: Auto-generate model based on type. Options: cube_all, cube, cube_bottom_top, cube_column, cross, orientable
+#   Note: If neither model.path nor model.type is present, the block uses vanilla block.
+#   Note: texture.path is required when using model.type for auto-generated models.
+#
+# Block Properties:
+#   material: The base block type (NOTE_BLOCK is recommended for custom blocks with properties)
+#   blockStateValue: The note value (0-24) used for note blocks to differentiate custom blocks
+#   hardness: Mining hardness (default: 1.0)
+#   resistance: Explosion resistance (default: 1.0)
+#
+# Minable With:
+#   minableWith.materials: List of vanilla materials that can mine this block (e.g., DIAMOND_PICKAXE)
+#   minableWith.items: List of RPG item keys that can mine this block
+#
+# Drops:
+#   drops.materials: List of vanilla materials to drop (e.g., COBBLESTONE)
+#   drops.items: List of RPG item keys to drop
+
+blocks:
+  # Example custom ore block
+  example_copper_ore:
+    name: "Copper Ore"
+    material: NOTE_BLOCK
+    blockStateValue: 0
+    hardness: 3.0
+    resistance: 3.0
+    minableWith:
+      materials:
+        - IRON_PICKAXE
+        - DIAMOND_PICKAXE
+        - NETHERITE_PICKAXE
+      items: []
+    drops:
+      materials:
+        - RAW_COPPER
+      items: []
+    # Uncomment to add custom texture/model:
+    # texture.path: "copper_ore.png"
+    # model.type: "cube_all"
+
+  # Example custom stone block
+  example_mystical_stone:
+    name: "Mystical Stone"
+    material: NOTE_BLOCK
+    blockStateValue: 1
+    hardness: 2.0
+    resistance: 6.0
+    minableWith:
+      materials:
+        - WOODEN_PICKAXE
+        - STONE_PICKAXE
+        - IRON_PICKAXE
+        - DIAMOND_PICKAXE
+        - NETHERITE_PICKAXE
+      items: []
+    drops:
+      materials:
+        - COBBLESTONE
+      items: []
+    # Uncomment to add custom texture/model:
+    # texture.path: "mystical_stone.png"
+    # model.type: "cube_all"

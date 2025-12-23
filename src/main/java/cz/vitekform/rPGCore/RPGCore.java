@@ -110,7 +110,11 @@ public final class RPGCore extends JavaPlugin {
         ItemLoader itemLoader = new ItemLoader(this);
         itemLoader.loadItems();
         
-        // Generate resource pack for custom items
+        // Load blocks from blocks.yml
+        BlockLoader blockLoader = new BlockLoader(this);
+        blockLoader.loadBlocks();
+        
+        // Generate resource pack for custom items and blocks
         ResourcePackGenerator resourcePackGenerator = new ResourcePackGenerator(this);
         resourcePackGenerator.generate();
 
@@ -169,6 +173,8 @@ public final class RPGCore extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerDamageHandler(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDamageHandler(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerEatFoodHandler(), this);
+        Bukkit.getPluginManager().registerEvents(new BlockBreakHandler(), this);
+        Bukkit.getPluginManager().registerEvents(new BlockPlaceHandler(), this);
 
         // Load entity data
         FileConfiguration entityData = safeGetConfig("entityData.yml");

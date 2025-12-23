@@ -1,5 +1,6 @@
 package cz.vitekform.rPGCore.objects;
 
+import cz.vitekform.rPGCore.ItemDictionary;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -8,50 +9,74 @@ import java.util.List;
 
 public class RPGBlock {
 
-    public final String MODEL_PATH;
-    public final String MODEL_TYPE;
-    public final String TEXTURE_PATH; // Only important in case that model path is not supplied (and model type is)
+    public String blockName;
+    public Material blockType; // Base block type (e.g., NOTE_BLOCK for custom blocks)
+    public int blockStateValue; // Block state value for note block properties
     public List<Material> minableWithMat;
-    public List<RPGItem> minableWithR;
-    public List<RPGItem> itemDropsR;
-    public List<Material> itemDropsM;
-    public Material blockType; // This is either the block type (in case that custom texture/model isnt provided) or it is set to blocks such as Noteblock (because we can use them to add textures)
+    public List<String> minableWithItems; // RPGItem keys that can mine this block
+    public List<String> itemDropsRPG; // RPGItem keys for drops
+    public List<Material> itemDropsMaterial;
+    public float hardness; // Block mining hardness
+    public float resistance; // Block explosion resistance
+    
+    // Resource pack related properties
+    public String texturePath;  // Path to texture file in /plugins/RPGCore/blocks/textures/
+    public String modelPath;    // Path to model file in /plugins/RPGCore/blocks/models/
+    public String modelType;    // Model type for auto-generation (e.g., "cube", "cube_all")
+    public String customModelKey; // The key used in the resourcepack for this block's model
+    
+    public RPGBlock() {
+        this.blockName = "";
+        this.blockType = Material.NOTE_BLOCK;
+        this.blockStateValue = 0;
+        this.minableWithMat = new ArrayList<>();
+        this.minableWithItems = new ArrayList<>();
+        this.itemDropsRPG = new ArrayList<>();
+        this.itemDropsMaterial = new ArrayList<>();
+        this.hardness = 1.0f;
+        this.resistance = 1.0f;
+        this.texturePath = null;
+        this.modelPath = null;
+        this.modelType = null;
+        this.customModelKey = null;
+    }
+    
+    /**
+     * Gets all drops for this block
+     * @return List of ItemStacks representing the drops
+     */
     public List<ItemStack> getDrops() {
         List<ItemStack> items = new ArrayList<>();
-        for (RPGItem item : itemDropsR) {
-            items.add(item.build());
+        for (String itemKey : itemDropsRPG) {
+            RPGItem item = ItemDictionary.getItem(itemKey);
+            if (item != null) {
+                items.add(item.build());
+            }
         }
-        for (Material mat : itemDropsM) {
+        for (Material mat : itemDropsMaterial) {
             items.add(new ItemStack(mat, 1));
         }
         return items;
     }
 
-    public RPGBlock() {
-        // Init empty instance
-        minableWithMat = List.of(Material.DEBUG_STICK); // any because we use this for any
-        minableWithR = new ArrayList<>();
-        itemDropsR = new ArrayList<>();
-        itemDropsM = new ArrayList<>();
-        MODEL_PATH = "";
-        MODEL_TYPE = "";
-        TEXTURE_PATH = "";
-        blockType = Material.STONE;
-    }
-
-    public boolean canBeMinedWith(ItemStack item) {
-        boolean minableWithRB = false;
-        // To Do:
-        // Implement RPG item handling
-        return minableWithMat.contains(item.getType()) || minableWithRB;
-    }
-
-    /* ToDo:
-    Basically everything
-    Custom texture handling
-    Block toughness and resistance
-    Block mining speed handling (using mining fatigue and stuff like this)
-    Item dropping
-    Loading from blocks.yml
+    /**
+     * Checks if the block can be mined with the given item
+     * @param item The ItemStack being used to mine
+     * @return true if the block can be mined with this item
      */
+    public boolean canBeMinedWith(ItemStack item) {
+        if (item == null) {
+            return minableWithMat.isEmpty() && minableWithItems.isEmpty();
+        }
+        
+        // Check if vanilla material matches
+        if (minableWithMat.contains(item.getType())) {
+            return true;
+        }
+        
+        // Check if RPGItem matches
+        // TODO: Implement RPGItem detection from ItemStack
+        // For now, return true if material matches OR if lists are empty (minable with anything)
+        return minableWithMat.isEmpty() && minableWithItems.isEmpty();
+    }
 }
