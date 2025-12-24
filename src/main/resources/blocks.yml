@@ -10,10 +10,12 @@
 #   Note: texture.path is required when using model.type for auto-generated models.
 #
 # Block Properties:
-#   material: The base block type (NOTE_BLOCK is recommended for custom blocks with PDC support)
+#   material: The base block type. Use BARRIER for custom blocks with PDC support (stores block data).
+#             BARRIER blocks are invisible but support PersistentDataContainer for proper identification.
+#             Alternative: STRUCTURE_VOID also supports PDC and is partially visible.
 #   customBlockModel: Custom model number stored in block PDC for resource pack identification (must be unique)
-#   hardness: Mining hardness (default: 1.0)
-#   resistance: Explosion resistance (default: 1.0)
+#   hardness: Mining hardness (default: 1.0) - currently configuration-only, implementation pending
+#   resistance: Explosion resistance (default: 1.0) - currently configuration-only, implementation pending
 #
 # Minable With:
 #   minableWith.materials: List of vanilla materials that can mine this block (e.g., DIAMOND_PICKAXE)
@@ -26,15 +28,16 @@
 #
 # IMPORTANT: Block Identification Using PDC
 #   Custom blocks use PersistentDataContainer (PDC) on the block itself to store identification data.
+#   Only block types that extend TileState support PDC (e.g., BARRIER, STRUCTURE_VOID).
 #   The "rpg_block_id" key stores the block's unique identifier, and "custom_block_model" stores the
-#   model number for resource pack hooks. This approach allows proper identification without relying
-#   on note values, and enables resource packs to use the custom_block_model number for rendering.
+#   model number for resource pack hooks. Resource packs can reference the customBlockModel value
+#   to render different block models.
 
 blocks:
   # Example custom ore block
   example_copper_ore:
     name: "Copper Ore"
-    material: NOTE_BLOCK
+    material: BARRIER
     customBlockModel: 1
     hardness: 3.0
     resistance: 3.0
@@ -55,7 +58,7 @@ blocks:
   # Example custom stone block
   example_mystical_stone:
     name: "Mystical Stone"
-    material: NOTE_BLOCK
+    material: BARRIER
     customBlockModel: 2
     hardness: 2.0
     resistance: 6.0

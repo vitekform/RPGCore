@@ -69,8 +69,9 @@ public class BlockLoader {
                     // Validate unique custom block model numbers
                     if (block.customBlockModel > 0) {
                         if (usedModelNumbers.contains(block.customBlockModel)) {
-                            logger.warning("Duplicate customBlockModel value " + block.customBlockModel + 
-                                    " for block '" + key + "'. This may cause conflicts!");
+                            logger.warning("Duplicate customBlockModel value " + block.customBlockModel +
+                                    " for block '" + key + "'. Skipping registration to avoid conflicts.");
+                            continue; // Skip this block to prevent conflicts
                         }
                         usedModelNumbers.add(block.customBlockModel);
                     }
@@ -85,10 +86,7 @@ public class BlockLoader {
                     logger.info("Loaded block: " + key);
                 }
             } catch (Exception e) {
-                logger.severe("Failed to load block: " + key + " - " + e.getMessage());
-                if (logger.isLoggable(java.util.logging.Level.FINE)) {
-                    logger.log(java.util.logging.Level.FINE, "Stack trace:", e);
-                }
+                logger.log(java.util.logging.Level.SEVERE, "Failed to load block: " + key, e);
             }
         }
 
@@ -148,29 +146,68 @@ public class BlockLoader {
             }
         }
 
-        // Load drops - RPG items
+        // Load drops - RPG items with validation
         List<String> dropItems = section.getStringList("drops.items");
-        block.itemDropsRPG.addAll(dropItems);
+        for (String itemKey : dropItems) {
+            if (ItemDictionary.getItem(itemKey) == null) {
+                logger.warning("RPG item key '" + itemKey + "' not found in drops for block '" + key + "'");
+            }
+            block.itemDropsRPG.add(itemKey);
+        }
 
         // Resource pack related attributes
         block.texturePath = sanitizePath(section.getString("texture.path", null), key, "texture.path");
         block.modelPath = sanitizePath(section.getString("model.path", null), key, "model.path");
-        block.modelType = section.getString("model.type", null);
+        
+        // Validate modelType
+        String modelType = section.getString("model.type", null);
+        if (modelType != null) {
+            String lowerModelType = modelType.toLowerCase();
+            if (!isValidModelType(lowerModelType)) {
+                logger.warning("Block " + key + " has invalid model.type '" + modelType + 
+                        "'. Valid types are: cube_all, cube, cube_bottom_top, cube_column, cross, orientable. Defaulting to cube_all.");
+                modelType = "cube_all";
+            }
+        }
+        block.modelType = modelType;
 
         return block;
     }
     
     /**
-     * Sanitizes file paths to prevent path traversal attacks
+     * Validates if a model type is supported
+     */
+    private boolean isValidModelType(String modelType) {
+        return modelType.equals("cube_all") || modelType.equals("cube") || 
+               modelType.equals("cube_bottom_top") || modelType.equals("cube_column") ||
+               modelType.equals("cross") || modelType.equals("orientable");
+    }
+    
+    /**
+     * Sanitizes file paths to prevent path traversal attacks.
+     * Uses a more robust approach with canonical path checking.
      */
     private String sanitizePath(String path, String blockKey, String fieldName) {
         if (path == null) {
             return null;
         }
         
-        // Check for path traversal attempts
-        if (path.contains("..") || path.startsWith("/") || path.contains("\\")) {
+        // Check for obvious path traversal attempts
+        if (path.contains("..") || path.startsWith("/") || path.startsWith("\\") ||
+            path.contains("%2e") || path.contains("%2f") || path.contains("%5c")) {
             logger.warning("Block " + blockKey + " has invalid " + fieldName + " with path traversal: " + path);
+            return null;
+        }
+        
+        // Only allow alphanumeric characters, underscores, hyphens, dots, and forward slashes
+        if (!path.matches("^[a-zA-Z0-9_\\-./]+$")) {
+            logger.warning("Block " + blockKey + " has invalid " + fieldName + " with illegal characters: " + path);
+            return null;
+        }
+        
+        // Path must not contain consecutive dots or slashes
+        if (path.contains("..") || path.contains("//")) {
+            logger.warning("Block " + blockKey + " has invalid " + fieldName + " with illegal sequence: " + path);
             return null;
         }
         

@@ -597,7 +597,10 @@ public class ResourcePackGenerator {
         if (modelAdded) {
             block.customModelKey = NAMESPACE + ":" + modelKeyName;
             logger.info("Block " + blockKey + " model available at: " + block.customModelKey);
-            logger.info("Note: Blockstate definitions for note_block must be configured separately to map note/instrument to this model.");
+            logger.info("Note: Resource pack integration requires custom configuration. For blocks using " +
+                    "BARRIER or similar TileState-supporting materials, the customBlockModel value (" + 
+                    block.customBlockModel + ") is stored in the block's PDC and can be used by resource " +
+                    "pack predicates to render different models.");
         }
     }
     
@@ -674,7 +677,10 @@ public class ResourcePackGenerator {
             case "cube_column" -> "minecraft:block/cube_column";
             case "cross" -> "minecraft:block/cross";
             case "orientable" -> "minecraft:block/orientable";
-            default -> "minecraft:block/cube_all";
+            default -> {
+                logger.warning("Unknown model type '" + modelType + "' for block. Falling back to cube_all.");
+                yield "minecraft:block/cube_all";
+            }
         };
 
         model.addProperty("parent", parent);

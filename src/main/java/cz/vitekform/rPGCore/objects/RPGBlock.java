@@ -27,6 +27,9 @@ public class RPGBlock {
     public List<String> minableWithItems; // RPGItem keys that can mine this block
     public List<String> itemDropsRPG; // RPGItem keys for drops
     public List<Material> itemDropsMat;
+    // TODO: hardness and resistance are currently configuration-only properties.
+    // Implementation pending: These will be used to influence mining speed (via mining fatigue effects)
+    // and explosion handling once those mechanics are implemented in BlockBreakHandler and explosion handlers.
     public float hardness; // Block mining hardness
     public float resistance; // Block explosion resistance
     
@@ -39,7 +42,7 @@ public class RPGBlock {
     public RPGBlock() {
         this.blockId = "";
         this.blockName = "";
-        this.blockType = Material.NOTE_BLOCK;
+        this.blockType = Material.BARRIER; // Default to BARRIER which supports TileState for PDC
         this.customBlockModel = 0;
         this.minableWithMat = new ArrayList<>();
         this.minableWithItems = new ArrayList<>();
@@ -54,18 +57,18 @@ public class RPGBlock {
     }
     
     /**
-     * Gets all drops for this block
+     * Gets all drops for this block.
+     * Invalid RPG item keys are silently skipped (validation happens during block loading).
      * @return List of ItemStacks representing the drops
      */
-    public List<ItemStack> getDrops(java.util.logging.Logger logger) {
+    public List<ItemStack> getDrops() {
         List<ItemStack> items = new ArrayList<>();
         for (String itemKey : itemDropsRPG) {
             RPGItem item = ItemDictionary.getItem(itemKey);
             if (item != null) {
                 items.add(item.build());
-            } else {
-                logger.warning("RPG item key '" + itemKey + "' not found in drops for block '" + blockId + "'");
             }
+            // Invalid keys are silently skipped - validation happens in BlockLoader
         }
         for (Material mat : itemDropsMat) {
             items.add(new ItemStack(mat, 1));

@@ -56,7 +56,7 @@ public class BlockBreakHandler implements Listener {
         // Handle custom drops
         event.setDropItems(false); // Cancel default drops
         Location dropLocation = block.getLocation().add(0.5, 0.5, 0.5);
-        List<ItemStack> drops = rpgBlock.getDrops(logger);
+        List<ItemStack> drops = rpgBlock.getDrops();
         
         for (ItemStack drop : drops) {
             block.getWorld().dropItemNaturally(dropLocation, drop);
