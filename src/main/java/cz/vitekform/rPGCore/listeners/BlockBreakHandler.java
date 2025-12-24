@@ -22,6 +22,8 @@ import java.util.logging.Logger;
  */
 public class BlockBreakHandler implements Listener {
 
+    private static final NamespacedKey BLOCK_ID_KEY = new NamespacedKey("rpgcore", "rpg_block_id");
+
     private final Logger logger;
 
     public BlockBreakHandler(Logger logger) {
@@ -74,13 +76,12 @@ public class BlockBreakHandler implements Listener {
         
         org.bukkit.block.TileState tileState = (org.bukkit.block.TileState) state;
         PersistentDataContainer pdc = tileState.getPersistentDataContainer();
-        NamespacedKey blockIdKey = new NamespacedKey("rpgcore", "rpg_block_id");
         
-        if (!pdc.has(blockIdKey, PersistentDataType.STRING)) {
+        if (!pdc.has(BLOCK_ID_KEY, PersistentDataType.STRING)) {
             return null;
         }
         
-        String blockId = pdc.get(blockIdKey, PersistentDataType.STRING);
+        String blockId = pdc.get(BLOCK_ID_KEY, PersistentDataType.STRING);
         return BlockDictionary.getBlock(blockId);
     }
 }

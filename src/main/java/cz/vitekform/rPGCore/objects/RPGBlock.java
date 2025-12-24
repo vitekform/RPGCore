@@ -16,6 +16,9 @@ import java.util.List;
 
 public class RPGBlock {
 
+    private static final NamespacedKey BLOCK_ID_KEY = new NamespacedKey("rpgcore", "rpg_block_id");
+    private static final NamespacedKey CUSTOM_MODEL_KEY = new NamespacedKey("rpgcore", "custom_block_model");
+
     public String blockId; // Unique identifier for this block
     public String blockName;
     public Material blockType; // Base block type (e.g., NOTE_BLOCK for custom blocks)
@@ -86,14 +89,12 @@ public class RPGBlock {
             meta.displayName(displayName);
             
             // Store block ID in PDC for identification when placed
-            NamespacedKey blockIdKey = new NamespacedKey("rpgcore", "rpg_block_id");
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
-            pdc.set(blockIdKey, PersistentDataType.STRING, blockId);
+            pdc.set(BLOCK_ID_KEY, PersistentDataType.STRING, blockId);
             
             // Store custom block model number
             if (customBlockModel > 0) {
-                NamespacedKey modelKey = new NamespacedKey("rpgcore", "custom_block_model");
-                pdc.set(modelKey, PersistentDataType.INTEGER, customBlockModel);
+                pdc.set(CUSTOM_MODEL_KEY, PersistentDataType.INTEGER, customBlockModel);
             }
             
             itemStack.setItemMeta(meta);

@@ -19,6 +19,9 @@ import org.bukkit.persistence.PersistentDataType;
  */
 public class BlockPlaceHandler implements Listener {
 
+    private static final NamespacedKey BLOCK_ID_KEY = new NamespacedKey("rpgcore", "rpg_block_id");
+    private static final NamespacedKey CUSTOM_MODEL_KEY = new NamespacedKey("rpgcore", "custom_block_model");
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
         ItemStack item = event.getItemInHand();
@@ -35,12 +38,11 @@ public class BlockPlaceHandler implements Listener {
         
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         
-        NamespacedKey blockKey = new NamespacedKey("rpgcore", "rpg_block_id");
-        if (!pdc.has(blockKey, PersistentDataType.STRING)) {
+        if (!pdc.has(BLOCK_ID_KEY, PersistentDataType.STRING)) {
             return;
         }
         
-        String blockId = pdc.get(blockKey, PersistentDataType.STRING);
+        String blockId = pdc.get(BLOCK_ID_KEY, PersistentDataType.STRING);
         RPGBlock rpgBlock = BlockDictionary.getBlock(blockId);
         
         if (rpgBlock == null) {
@@ -56,12 +58,11 @@ public class BlockPlaceHandler implements Listener {
         if (blockState instanceof org.bukkit.block.TileState) {
             org.bukkit.block.TileState tileState = (org.bukkit.block.TileState) blockState;
             PersistentDataContainer blockPdc = tileState.getPersistentDataContainer();
-            blockPdc.set(blockKey, PersistentDataType.STRING, blockId);
+            blockPdc.set(BLOCK_ID_KEY, PersistentDataType.STRING, blockId);
             
             // Store custom block model if present
             if (rpgBlock.customBlockModel > 0) {
-                NamespacedKey modelKey = new NamespacedKey("rpgcore", "custom_block_model");
-                blockPdc.set(modelKey, PersistentDataType.INTEGER, rpgBlock.customBlockModel);
+                blockPdc.set(CUSTOM_MODEL_KEY, PersistentDataType.INTEGER, rpgBlock.customBlockModel);
             }
             
             // Update the block state
