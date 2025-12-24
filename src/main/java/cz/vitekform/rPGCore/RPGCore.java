@@ -173,7 +173,7 @@ public final class RPGCore extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerDamageHandler(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDamageHandler(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerEatFoodHandler(), this);
-        Bukkit.getPluginManager().registerEvents(new BlockBreakHandler(), this);
+        Bukkit.getPluginManager().registerEvents(new BlockBreakHandler(getLogger()), this);
         Bukkit.getPluginManager().registerEvents(new BlockPlaceHandler(), this);
 
         // Load entity data

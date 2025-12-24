@@ -11,7 +11,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -38,8 +40,10 @@ public class BlockLoader {
         // Load defaults from jar to merge any new blocks
         try (InputStream defaultStream = plugin.getResource("blocks.yml")) {
             if (defaultStream != null) {
-                YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
-                blocksConfig.setDefaults(defaultConfig);
+                try (InputStreamReader reader = new InputStreamReader(defaultStream, StandardCharsets.UTF_8)) {
+                    YamlConfiguration defaultConfig = YamlConfiguration.loadConfiguration(reader);
+                    blocksConfig.setDefaults(defaultConfig);
+                }
             }
         } catch (Exception e) {
             logger.warning("Failed to load default blocks.yml: " + e.getMessage());
@@ -51,6 +55,8 @@ public class BlockLoader {
             return;
         }
 
+        Set<Integer> usedModelNumbers = new HashSet<>();
+
         for (String key : blocksSection.getKeys(false)) {
             ConfigurationSection blockSection = blocksSection.getConfigurationSection(key);
             if (blockSection == null) {
@@ -60,6 +66,18 @@ public class BlockLoader {
             try {
                 RPGBlock block = loadBlock(blockSection, key);
                 if (block != null) {
+                    // Validate unique custom block model numbers
+                    if (block.customBlockModel > 0) {
+                        if (usedModelNumbers.contains(block.customBlockModel)) {
+                            logger.warning("Duplicate customBlockModel value " + block.customBlockModel + 
+                                    " for block '" + key + "'. This may cause conflicts!");
+                        }
+                        usedModelNumbers.add(block.customBlockModel);
+                    }
+                    
+                    // Set block ID
+                    block.blockId = key;
+                    
                     // Generate UUID for the block and register it
                     UUID blockUUID = UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
                     BlockDictionary.blockRegistry.put(blockUUID, block);
@@ -67,8 +85,10 @@ public class BlockLoader {
                     logger.info("Loaded block: " + key);
                 }
             } catch (Exception e) {
-                logger.warning("Failed to load block: " + key + " - " + e.getMessage());
-                e.printStackTrace();
+                logger.severe("Failed to load block: " + key + " - " + e.getMessage());
+                if (logger.isLoggable(java.util.logging.Level.FINE)) {
+                    logger.log(java.util.logging.Level.FINE, "Stack trace:", e);
+                }
             }
         }
 
@@ -98,7 +118,7 @@ public class BlockLoader {
         block.blockType = material;
 
         // Load optional properties
-        block.blockStateValue = section.getInt("blockStateValue", 0);
+        block.customBlockModel = section.getInt("customBlockModel", 0);
         block.hardness = (float) section.getDouble("hardness", 1.0);
         block.resistance = (float) section.getDouble("resistance", 1.0);
 
@@ -122,7 +142,7 @@ public class BlockLoader {
         for (String matStr : dropMaterials) {
             try {
                 Material mat = Material.valueOf(matStr.toUpperCase());
-                block.itemDropsMaterial.add(mat);
+                block.itemDropsMat.add(mat);
             } catch (IllegalArgumentException e) {
                 logger.warning("Invalid material in drops for block " + key + ": " + matStr);
             }
@@ -133,10 +153,27 @@ public class BlockLoader {
         block.itemDropsRPG.addAll(dropItems);
 
         // Resource pack related attributes
-        block.texturePath = section.getString("texture.path", null);
-        block.modelPath = section.getString("model.path", null);
+        block.texturePath = sanitizePath(section.getString("texture.path", null), key, "texture.path");
+        block.modelPath = sanitizePath(section.getString("model.path", null), key, "model.path");
         block.modelType = section.getString("model.type", null);
 
         return block;
+    }
+    
+    /**
+     * Sanitizes file paths to prevent path traversal attacks
+     */
+    private String sanitizePath(String path, String blockKey, String fieldName) {
+        if (path == null) {
+            return null;
+        }
+        
+        // Check for path traversal attempts
+        if (path.contains("..") || path.startsWith("/") || path.contains("\\")) {
+            logger.warning("Block " + blockKey + " has invalid " + fieldName + " with path traversal: " + path);
+            return null;
+        }
+        
+        return path;
     }
 }

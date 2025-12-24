@@ -695,6 +695,20 @@ public class ResourcePackGenerator {
                 textures.addProperty("up", textureRef);
                 textures.addProperty("down", textureRef);
             }
+            case "cube_bottom_top" -> {
+                textures.addProperty("top", textureRef);
+                textures.addProperty("bottom", textureRef);
+                textures.addProperty("side", textureRef);
+            }
+            case "cube_column" -> {
+                textures.addProperty("end", textureRef);
+                textures.addProperty("side", textureRef);
+            }
+            case "orientable" -> {
+                textures.addProperty("front", textureRef);
+                textures.addProperty("side", textureRef);
+                textures.addProperty("top", textureRef);
+            }
             case "cross" -> textures.addProperty("cross", textureRef);
             default -> textures.addProperty("all", textureRef);
         }

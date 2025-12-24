@@ -1,6 +1,6 @@
 # RPGCore Blocks Configuration
 # Each block must have: name, material
-# Optional attributes: blockStateValue, hardness, resistance, minableWith, drops
+# Optional attributes: customBlockModel, hardness, resistance, minableWith, drops
 #
 # Custom Textures and Models:
 #   texture.path: Path to texture file in /plugins/RPGCore/blocks/textures/ (e.g., "copper_ore.png")
@@ -10,8 +10,8 @@
 #   Note: texture.path is required when using model.type for auto-generated models.
 #
 # Block Properties:
-#   material: The base block type (NOTE_BLOCK is recommended for custom blocks with properties)
-#   blockStateValue: The note value (0-24) used for note blocks to differentiate custom blocks
+#   material: The base block type (NOTE_BLOCK is recommended for custom blocks with PDC support)
+#   customBlockModel: Custom model number stored in block PDC for resource pack identification (must be unique)
 #   hardness: Mining hardness (default: 1.0)
 #   resistance: Explosion resistance (default: 1.0)
 #
@@ -24,19 +24,18 @@
 #   drops.materials: List of vanilla materials to drop (e.g., COBBLESTONE)
 #   drops.items: List of RPG item keys to drop
 #
-# IMPORTANT: Block State Configuration
-#   When using custom textures/models with NOTE_BLOCK, you must manually configure the blockstate
-#   file to map note/instrument combinations to your custom models. The resource pack generator
-#   creates the models and textures but does not modify the note_block.json blockstate file to
-#   avoid conflicts with vanilla blocks and other plugins. You can use tools like BlockBench or
-#   manually create/edit the assets/minecraft/blockstates/note_block.json file in your resource pack.
+# IMPORTANT: Block Identification Using PDC
+#   Custom blocks use PersistentDataContainer (PDC) on the block itself to store identification data.
+#   The "rpg_block_id" key stores the block's unique identifier, and "custom_block_model" stores the
+#   model number for resource pack hooks. This approach allows proper identification without relying
+#   on note values, and enables resource packs to use the custom_block_model number for rendering.
 
 blocks:
   # Example custom ore block
   example_copper_ore:
     name: "Copper Ore"
     material: NOTE_BLOCK
-    blockStateValue: 0
+    customBlockModel: 1
     hardness: 3.0
     resistance: 3.0
     minableWith:
@@ -47,7 +46,7 @@ blocks:
       items: []
     drops:
       materials:
-        - RAW_COPPER
+        - COBBLESTONE
       items: []
     # Uncomment to add custom texture/model:
     # texture.path: "copper_ore.png"
@@ -57,7 +56,7 @@ blocks:
   example_mystical_stone:
     name: "Mystical Stone"
     material: NOTE_BLOCK
-    blockStateValue: 1
+    customBlockModel: 2
     hardness: 2.0
     resistance: 6.0
     minableWith:

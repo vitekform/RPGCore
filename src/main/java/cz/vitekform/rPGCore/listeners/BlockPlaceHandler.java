@@ -3,8 +3,8 @@ package cz.vitekform.rPGCore.listeners;
 import cz.vitekform.rPGCore.BlockDictionary;
 import cz.vitekform.rPGCore.objects.RPGBlock;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.type.NoteBlock;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -13,14 +13,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.NamespacedKey;
 
 /**
  * Handles block place events for custom RPG blocks.
  */
 public class BlockPlaceHandler implements Listener {
-
-    private static final int MAX_NOTE_VALUE = 24;
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -32,6 +29,10 @@ public class BlockPlaceHandler implements Listener {
         }
         
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return;
+        }
+        
         PersistentDataContainer pdc = meta.getPersistentDataContainer();
         
         NamespacedKey blockKey = new NamespacedKey("rpgcore", "rpg_block_id");
@@ -46,20 +47,25 @@ public class BlockPlaceHandler implements Listener {
             return;
         }
         
-        // Set the block to the correct type with correct properties
+        // Set the block to the correct type
         Block placedBlock = event.getBlockPlaced();
+        placedBlock.setType(rpgBlock.blockType);
         
-        if (rpgBlock.blockType == Material.NOTE_BLOCK) {
-            placedBlock.setType(Material.NOTE_BLOCK);
+        // Store block ID and custom model in block PDC if it's a TileState
+        org.bukkit.block.BlockState blockState = placedBlock.getState();
+        if (blockState instanceof org.bukkit.block.TileState) {
+            org.bukkit.block.TileState tileState = (org.bukkit.block.TileState) blockState;
+            PersistentDataContainer blockPdc = tileState.getPersistentDataContainer();
+            blockPdc.set(blockKey, PersistentDataType.STRING, blockId);
             
-            // Set the note value to match the RPGBlock's state (0-24)
-            if (placedBlock.getBlockData() instanceof NoteBlock noteBlock) {
-                int noteValue = Math.min(Math.max(rpgBlock.blockStateValue, 0), MAX_NOTE_VALUE);
-                noteBlock.setNote(new org.bukkit.Note(noteValue));
-                placedBlock.setBlockData(noteBlock);
+            // Store custom block model if present
+            if (rpgBlock.customBlockModel > 0) {
+                NamespacedKey modelKey = new NamespacedKey("rpgcore", "custom_block_model");
+                blockPdc.set(modelKey, PersistentDataType.INTEGER, rpgBlock.customBlockModel);
             }
-        } else {
-            placedBlock.setType(rpgBlock.blockType);
+            
+            // Update the block state
+            tileState.update(true, false);
         }
     }
 }
