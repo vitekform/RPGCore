@@ -188,12 +188,13 @@ public final class RPGCore extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ChunkHandler(blockManager), this);
         
         // Start mining progress cleanup task (runs every 5 seconds)
+        final long CLEANUP_INTERVAL_TICKS = 5 * 20L; // 5 seconds in ticks
         new BukkitRunnable() {
             @Override
             public void run() {
                 progressTracker.cleanupStaleProgress();
             }
-        }.runTaskTimer(this, 100L, 100L); // 5 seconds
+        }.runTaskTimer(this, CLEANUP_INTERVAL_TICKS, CLEANUP_INTERVAL_TICKS);
 
         // Load entity data
         FileConfiguration entityData = safeGetConfig("entityData.yml");

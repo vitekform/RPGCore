@@ -102,7 +102,7 @@ public class MiningProgressTracker {
         
         // Efficiency enchantment
         int efficiencyLevel = tool.getEnchantmentLevel(Enchantment.EFFICIENCY);
-        float efficiencyMultiplier = 1.0f + (efficiencyLevel * efficiencyLevel + 1.0f);
+        float efficiencyMultiplier = efficiencyLevel > 0 ? (efficiencyLevel * efficiencyLevel + 1.0f) : 1.0f;
         
         // Calculate final speed (reciprocal of time to break)
         // Formula: speed = (baseSpeed * toolMultiplier * efficiencyMultiplier) / hardness

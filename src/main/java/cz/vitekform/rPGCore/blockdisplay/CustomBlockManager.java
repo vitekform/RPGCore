@@ -220,6 +220,9 @@ public class CustomBlockManager {
      * Restores BlockDisplay entities for custom blocks in a chunk.
      * Called when a chunk loads.
      * 
+     * Note: This scans all blocks in the chunk which may be inefficient for large worlds.
+     * Consider optimizing with a block location index if performance becomes an issue.
+     * 
      * @param chunk The chunk that was loaded
      */
     public void restoreDisplaysInChunk(org.bukkit.Chunk chunk) {
@@ -268,6 +271,9 @@ public class CustomBlockManager {
     /**
      * Cleans up BlockDisplay entities in a chunk.
      * Called when a chunk unloads.
+     * 
+     * Note: This scans all blocks in the chunk. If performance is a concern,
+     * consider maintaining a separate index of custom block locations.
      * 
      * @param chunk The chunk that was unloaded
      */
