@@ -1,6 +1,7 @@
 package cz.vitekform.rPGCore.objects;
 
 import cz.vitekform.rPGCore.ItemDictionary;
+// import io.th0rgal.oraxen.api.OraxenItems;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -17,12 +18,11 @@ import java.util.List;
 public class RPGBlock {
 
     private static final NamespacedKey BLOCK_ID_KEY = new NamespacedKey("rpgcore", "rpg_block_id");
-    private static final NamespacedKey CUSTOM_MODEL_KEY = new NamespacedKey("rpgcore", "custom_block_model");
 
     public String blockId; // Unique identifier for this block
     public String blockName;
-    public Material blockType; // Base block type (e.g., NOTE_BLOCK for custom blocks)
-    public int customBlockModel; // Custom block model number for resource pack (stored in block PDC)
+    public Material blockType; // Base block type (e.g., BARRIER for custom blocks)
+    public String oraxenItemId; // Oraxen item ID for this block's visual representation
     public List<Material> minableWithMat;
     public List<String> minableWithItems; // RPGItem keys that can mine this block
     public List<String> itemDropsRPG; // RPGItem keys for drops
@@ -33,27 +33,17 @@ public class RPGBlock {
     public float hardness; // Block mining hardness
     public float resistance; // Block explosion resistance
     
-    // Resource pack related properties
-    public String texturePath;  // Path to texture file in /plugins/RPGCore/blocks/textures/
-    public String modelPath;    // Path to model file in /plugins/RPGCore/blocks/models/
-    public String modelType;    // Model type for auto-generation (e.g., "cube", "cube_all")
-    public String customModelKey; // The key used in the resourcepack for this block's model
-    
     public RPGBlock() {
         this.blockId = "";
         this.blockName = "";
-        this.blockType = Material.BARRIER; // Default to BARRIER which supports TileState for PDC
-        this.customBlockModel = 0;
+        this.blockType = Material.BARRIER; // Default to BARRIER for custom blocks
+        this.oraxenItemId = null;
         this.minableWithMat = new ArrayList<>();
         this.minableWithItems = new ArrayList<>();
         this.itemDropsRPG = new ArrayList<>();
         this.itemDropsMat = new ArrayList<>();
         this.hardness = 1.0f;
         this.resistance = 1.0f;
-        this.texturePath = null;
-        this.modelPath = null;
-        this.modelType = null;
-        this.customModelKey = null;
     }
     
     /**
@@ -77,11 +67,37 @@ public class RPGBlock {
     }
     
     /**
-     * Builds an ItemStack representation of this block for player inventory
+     * Builds an ItemStack representation of this block for player inventory.
+     * Uses Oraxen item if oraxenItemId is specified, otherwise creates a vanilla item.
+     * Note: Oraxen API calls are commented out - uncomment when Oraxen dependency is available.
      * @return ItemStack with proper metadata
      */
     public ItemStack build() {
-        ItemStack itemStack = new ItemStack(blockType);
+        ItemStack itemStack;
+        
+        // Try to use Oraxen item if specified
+        if (oraxenItemId != null && !oraxenItemId.isEmpty()) {
+            /*
+            var oraxenItem = OraxenItems.getItemById(oraxenItemId);
+            if (oraxenItem != null) {
+                itemStack = oraxenItem.build();
+                
+                // Add RPGCore block ID to the Oraxen item's PDC
+                ItemMeta meta = itemStack.getItemMeta();
+                if (meta != null) {
+                    PersistentDataContainer pdc = meta.getPersistentDataContainer();
+                    pdc.set(BLOCK_ID_KEY, PersistentDataType.STRING, blockId);
+                    itemStack.setItemMeta(meta);
+                }
+                
+                return itemStack;
+            }
+            */
+            // TODO: Uncomment above when Oraxen is available
+        }
+        
+        // Fallback to vanilla item if no Oraxen item
+        itemStack = new ItemStack(blockType);
         ItemMeta meta = itemStack.getItemMeta();
         
         if (meta != null) {
@@ -94,11 +110,6 @@ public class RPGBlock {
             // Store block ID in PDC for identification when placed
             PersistentDataContainer pdc = meta.getPersistentDataContainer();
             pdc.set(BLOCK_ID_KEY, PersistentDataType.STRING, blockId);
-            
-            // Store custom block model number
-            if (customBlockModel > 0) {
-                pdc.set(CUSTOM_MODEL_KEY, PersistentDataType.INTEGER, customBlockModel);
-            }
             
             itemStack.setItemMeta(meta);
         }

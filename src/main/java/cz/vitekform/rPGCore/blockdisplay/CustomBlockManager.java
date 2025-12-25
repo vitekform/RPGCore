@@ -39,12 +39,10 @@ public class CustomBlockManager {
     private static class CustomBlockData {
         String blockId;
         UUID displayUUID;
-        int customModel;
         
-        CustomBlockData(String blockId, UUID displayUUID, int customModel) {
+        CustomBlockData(String blockId, UUID displayUUID) {
             this.blockId = blockId;
             this.displayUUID = displayUUID;
-            this.customModel = customModel;
         }
     }
     
@@ -78,8 +76,7 @@ public class CustomBlockManager {
         // Store block data in our map (not in PDC since BARRIER doesn't support it)
         CustomBlockData data = new CustomBlockData(
             rpgBlock.blockId,
-            display.getUniqueId(),
-            rpgBlock.customBlockModel
+            display.getUniqueId()
         );
         blockData.put(normalizeLocation(location), data);
         displayCache.put(normalizeLocation(location), display);
@@ -169,16 +166,32 @@ public class CustomBlockManager {
     
     /**
      * Gets the BlockData to use for the BlockDisplay entity.
-     * Uses note_block by default, which can be overridden by resource packs.
+     * Uses Oraxen block data if available, otherwise falls back to note_block.
+     * Note: Oraxen API calls are commented out - uncomment when Oraxen dependency is available.
      * 
      * @param rpgBlock The RPG block definition
      * @return The BlockData for the display
      */
     private BlockData getDisplayBlockData(RPGBlock rpgBlock) {
-        // Use note_block as the base for custom models
-        // The resource pack will override this based on customBlockModel stored in PDC
-        Material displayMaterial = Material.NOTE_BLOCK;
-        return Bukkit.createBlockData(displayMaterial);
+        // Try to get Oraxen block data if oraxenItemId is specified
+        if (rpgBlock.oraxenItemId != null && !rpgBlock.oraxenItemId.isEmpty()) {
+            try {
+                /*
+                io.th0rgal.oraxen.mechanics.provided.gameplay.block.BlockMechanic blockMechanic = 
+                    io.th0rgal.oraxen.api.OraxenBlocks.getBlockMechanic(rpgBlock.oraxenItemId);
+                
+                if (blockMechanic != null) {
+                    return blockMechanic.getBlock();
+                }
+                */
+                // TODO: Uncomment above when Oraxen is available
+            } catch (Exception e) {
+                logger.warning("Failed to get Oraxen block data for " + rpgBlock.oraxenItemId + ": " + e.getMessage());
+            }
+        }
+        
+        // Fallback to note_block if no Oraxen block is available
+        return Bukkit.createBlockData(Material.NOTE_BLOCK);
     }
     
     /**
@@ -244,11 +257,10 @@ public class CustomBlockManager {
                     
                     String blockId = config.getString(key + ".blockId");
                     String uuidStr = config.getString(key + ".displayUUID");
-                    int customModel = config.getInt(key + ".customModel", 0);
                     
                     if (blockId != null && uuidStr != null) {
                         UUID displayUUID = UUID.fromString(uuidStr);
-                        CustomBlockData data = new CustomBlockData(blockId, displayUUID, customModel);
+                        CustomBlockData data = new CustomBlockData(blockId, displayUUID);
                         blockData.put(location, data);
                     }
                 } catch (Exception e) {
@@ -281,7 +293,6 @@ public class CustomBlockManager {
                 
                 config.set(key + ".blockId", data.blockId);
                 config.set(key + ".displayUUID", data.displayUUID.toString());
-                config.set(key + ".customModel", data.customModel);
             }
             
             config.save(dataFile);

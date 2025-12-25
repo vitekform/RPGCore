@@ -59,6 +59,8 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
+        <!-- Note: Oraxen dependency must be added manually or via local repository
+             The plugin requires Oraxen to be installed on the server at runtime -->
     </repositories>
 
     <dependencies>
@@ -74,5 +76,14 @@
             <version>2.10.1</version>
             <scope>provided</scope>
         </dependency>
+        <!-- Oraxen API - Install Oraxen plugin jar to your local Maven repository if needed
+             mvn install:install-file -Dfile=Oraxen.jar -DgroupId=io.th0rgal -DartifactId=oraxen -Dversion=1.180.0 -Dpackaging=jar
+        <dependency>
+            <groupId>io.th0rgal</groupId>
+            <artifactId>oraxen</artifactId>
+            <version>1.180.0</version>
+            <scope>provided</scope>
+        </dependency>
+        -->
     </dependencies>
 </project>

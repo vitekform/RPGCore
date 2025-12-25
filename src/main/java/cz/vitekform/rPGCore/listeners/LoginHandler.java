@@ -4,11 +4,6 @@ import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.RPGAttribute;
 import cz.vitekform.rPGCore.objects.RPGClass;
 import cz.vitekform.rPGCore.objects.RPGPlayer;
-import cz.vitekform.rPGCore.pluginUtils.ResourcePackGenerator;
-import net.kyori.adventure.resource.ResourcePackInfo;
-import net.kyori.adventure.resource.ResourcePackRequest;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,7 +12,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.HashMap;
 
 public class LoginHandler implements Listener {
@@ -25,9 +19,6 @@ public class LoginHandler implements Listener {
     @EventHandler
     public void whenPlayerJoins(PlayerJoinEvent event) {
         Player p = event.getPlayer();
-        
-        // Apply resource pack if available
-        applyResourcePack(p);
         
         FileConfiguration data = RPGCore.safeGetConfig("pdata.yml");
         if (data.contains("player." + p.getUniqueId())) {
@@ -124,58 +115,5 @@ public class LoginHandler implements Listener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Applies the resource pack to the player if it's available and ready.
-     * @param player The player to send the resource pack to
-     */
-    private void applyResourcePack(Player player) {
-        if (!ResourcePackGenerator.isResourcePackReady()) {
-            return;
-        }
-
-        String url = ResourcePackGenerator.getResourcePackUrl();
-        byte[] hash = ResourcePackGenerator.getResourcePackHash();
-
-        if (url == null || hash == null) {
-            return;
-        }
-
-        try {
-            URI uri = URI.create(url);
-            if (!uri.isAbsolute()) {
-                return;
-            }
-            
-            ResourcePackInfo packInfo = ResourcePackInfo.resourcePackInfo()
-                    .uri(uri)
-                    .hash(bytesToHex(hash))
-                    .build();
-
-            ResourcePackRequest request = ResourcePackRequest.resourcePackRequest()
-                    .packs(packInfo)
-                    .prompt(Component.text("RPGCore requires a resource pack for custom items.", NamedTextColor.YELLOW))
-                    .required(false)
-                    .build();
-
-            player.sendResourcePacks(request);
-        } catch (IllegalArgumentException e) {
-            // Malformed URL - log and skip
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Converts a byte array to a hex string.
-     */
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
     }
 }

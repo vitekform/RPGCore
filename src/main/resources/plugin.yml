@@ -4,6 +4,7 @@ main: cz.vitekform.rPGCore.RPGCore
 api-version: '1.21'
 authors: [ vitekform ]
 website: https://vitekform.cz
+depend: [Oraxen]
 commands:
   rpgcore:
     description: Main command for RPGCore

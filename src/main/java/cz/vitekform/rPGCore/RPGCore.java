@@ -11,7 +11,6 @@ import cz.vitekform.rPGCore.commands.args.enums.RPGCoreSubcommand;
 import cz.vitekform.rPGCore.listeners.*;
 import cz.vitekform.rPGCore.objects.*;
 import cz.vitekform.rPGCore.pluginUtils.PluginUpdater;
-import cz.vitekform.rPGCore.pluginUtils.ResourcePackGenerator;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.plugin.lifecycle.event.LifecycleEventManager;
@@ -124,10 +123,6 @@ public final class RPGCore extends JavaPlugin {
         // Load blocks from blocks.yml
         BlockLoader blockLoader = new BlockLoader(this);
         blockLoader.loadBlocks();
-        
-        // Generate resource pack for custom items and blocks
-        ResourcePackGenerator resourcePackGenerator = new ResourcePackGenerator(this);
-        resourcePackGenerator.generate();
 
         final LifecycleEventManager<Plugin> manager = this.getLifecycleManager();
         manager.registerEventHandler(LifecycleEvents.COMMANDS, event -> {
