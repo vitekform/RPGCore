@@ -5,14 +5,17 @@ import cz.vitekform.rPGCore.objects.RPGBlock;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -20,18 +23,36 @@ import java.util.logging.Logger;
 
 /**
  * Manages custom blocks using BARRIER blocks with BlockDisplay entities for visual representation.
+ * Uses file-based storage for block locations since BARRIER blocks don't support PersistentDataContainer.
  */
 public class CustomBlockManager {
     
-    private static final NamespacedKey BLOCK_ID_KEY = new NamespacedKey("rpgcore", "rpg_block_id");
-    private static final NamespacedKey DISPLAY_UUID_KEY = new NamespacedKey("rpgcore", "display_uuid");
-    private static final NamespacedKey CUSTOM_MODEL_KEY = new NamespacedKey("rpgcore", "custom_block_model");
-    
     private final Logger logger;
+    private final Plugin plugin;
     private final Map<Location, BlockDisplay> displayCache = new HashMap<>();
+    private final Map<Location, CustomBlockData> blockData = new HashMap<>();
+    private final File dataFile;
     
-    public CustomBlockManager(Logger logger) {
+    /**
+     * Internal class to store custom block data
+     */
+    private static class CustomBlockData {
+        String blockId;
+        UUID displayUUID;
+        int customModel;
+        
+        CustomBlockData(String blockId, UUID displayUUID, int customModel) {
+            this.blockId = blockId;
+            this.displayUUID = displayUUID;
+            this.customModel = customModel;
+        }
+    }
+    
+    public CustomBlockManager(Plugin plugin, Logger logger) {
+        this.plugin = plugin;
         this.logger = logger;
+        this.dataFile = new File(plugin.getDataFolder(), "custom_blocks.yml");
+        loadBlockData();
     }
     
     /**
@@ -48,30 +69,24 @@ public class CustomBlockManager {
         // Set the physical block to BARRIER
         block.setType(Material.BARRIER);
         
-        // Store block data in PDC
-        org.bukkit.block.BlockState state = block.getState();
-        if (!(state instanceof org.bukkit.block.TileState)) {
-            logger.warning("BARRIER block at " + location + " is not a TileState!");
+        // Spawn BlockDisplay entity for visual representation
+        BlockDisplay display = spawnBlockDisplay(location, rpgBlock);
+        if (display == null) {
             return false;
         }
         
-        org.bukkit.block.TileState tileState = (org.bukkit.block.TileState) state;
-        PersistentDataContainer pdc = tileState.getPersistentDataContainer();
+        // Store block data in our map (not in PDC since BARRIER doesn't support it)
+        CustomBlockData data = new CustomBlockData(
+            rpgBlock.blockId,
+            display.getUniqueId(),
+            rpgBlock.customBlockModel
+        );
+        blockData.put(normalizeLocation(location), data);
+        displayCache.put(normalizeLocation(location), display);
         
-        // Store block ID and custom model
-        pdc.set(BLOCK_ID_KEY, PersistentDataType.STRING, rpgBlock.blockId);
-        if (rpgBlock.customBlockModel > 0) {
-            pdc.set(CUSTOM_MODEL_KEY, PersistentDataType.INTEGER, rpgBlock.customBlockModel);
-        }
+        // Save to disk
+        saveBlockData();
         
-        // Spawn BlockDisplay entity for visual representation
-        BlockDisplay display = spawnBlockDisplay(location, rpgBlock);
-        if (display != null) {
-            pdc.set(DISPLAY_UUID_KEY, PersistentDataType.STRING, display.getUniqueId().toString());
-            displayCache.put(location, display);
-        }
-        
-        tileState.update(true, false);
         return true;
     }
     
@@ -81,26 +96,31 @@ public class CustomBlockManager {
      * @param location The location of the block to remove
      */
     public void removeCustomBlock(Location location) {
+        Location normalized = normalizeLocation(location);
         Block block = location.getBlock();
         
-        // Get BlockDisplay UUID from PDC
-        UUID displayUUID = getDisplayUUID(block);
-        if (displayUUID != null) {
+        // Get block data
+        CustomBlockData data = blockData.get(normalized);
+        if (data != null && data.displayUUID != null) {
             // Remove the BlockDisplay entity
             World world = location.getWorld();
             if (world != null) {
-                org.bukkit.entity.Entity entity = world.getEntity(displayUUID);
+                org.bukkit.entity.Entity entity = world.getEntity(data.displayUUID);
                 if (entity instanceof BlockDisplay) {
                     entity.remove();
                 }
             }
         }
         
-        // Remove from cache
-        displayCache.remove(location);
+        // Remove from caches
+        displayCache.remove(normalized);
+        blockData.remove(normalized);
         
         // Remove the barrier block
         block.setType(Material.AIR);
+        
+        // Save to disk
+        saveBlockData();
     }
     
     /**
@@ -172,124 +192,172 @@ public class CustomBlockManager {
             return null;
         }
         
-        org.bukkit.block.BlockState state = block.getState();
-        if (!(state instanceof org.bukkit.block.TileState)) {
+        Location normalized = normalizeLocation(block.getLocation());
+        CustomBlockData data = blockData.get(normalized);
+        if (data == null) {
             return null;
         }
         
-        org.bukkit.block.TileState tileState = (org.bukkit.block.TileState) state;
-        PersistentDataContainer pdc = tileState.getPersistentDataContainer();
-        
-        if (!pdc.has(BLOCK_ID_KEY, PersistentDataType.STRING)) {
-            return null;
-        }
-        
-        String blockId = pdc.get(BLOCK_ID_KEY, PersistentDataType.STRING);
-        return BlockDictionary.getBlock(blockId);
+        return BlockDictionary.blocks.get(data.blockId);
     }
     
     /**
-     * Gets the BlockDisplay UUID from a block's PDC.
-     * 
-     * @param block The block
-     * @return The UUID or null if not found
+     * Normalizes a location to ensure consistent map keys.
+     * Rounds coordinates to block positions.
      */
-    private UUID getDisplayUUID(Block block) {
-        org.bukkit.block.BlockState state = block.getState();
-        if (!(state instanceof org.bukkit.block.TileState)) {
-            return null;
+    private Location normalizeLocation(Location loc) {
+        return new Location(
+            loc.getWorld(),
+            loc.getBlockX(),
+            loc.getBlockY(),
+            loc.getBlockZ()
+        );
+    }
+    
+    /**
+     * Loads block data from disk.
+     */
+    private void loadBlockData() {
+        if (!dataFile.exists()) {
+            return;
         }
         
-        org.bukkit.block.TileState tileState = (org.bukkit.block.TileState) state;
-        PersistentDataContainer pdc = tileState.getPersistentDataContainer();
-        
-        if (!pdc.has(DISPLAY_UUID_KEY, PersistentDataType.STRING)) {
-            return null;
-        }
-        
-        String uuidStr = pdc.get(DISPLAY_UUID_KEY, PersistentDataType.STRING);
         try {
-            return UUID.fromString(uuidStr);
-        } catch (IllegalArgumentException e) {
-            logger.warning("Invalid UUID in block PDC: " + uuidStr);
-            return null;
+            FileConfiguration config = YamlConfiguration.loadConfiguration(dataFile);
+            
+            for (String key : config.getKeys(false)) {
+                String[] parts = key.split(",");
+                if (parts.length != 4) {
+                    continue;
+                }
+                
+                try {
+                    World world = Bukkit.getWorld(parts[0]);
+                    if (world == null) {
+                        continue;
+                    }
+                    
+                    int x = Integer.parseInt(parts[1]);
+                    int y = Integer.parseInt(parts[2]);
+                    int z = Integer.parseInt(parts[3]);
+                    Location location = new Location(world, x, y, z);
+                    
+                    String blockId = config.getString(key + ".blockId");
+                    String uuidStr = config.getString(key + ".displayUUID");
+                    int customModel = config.getInt(key + ".customModel", 0);
+                    
+                    if (blockId != null && uuidStr != null) {
+                        UUID displayUUID = UUID.fromString(uuidStr);
+                        CustomBlockData data = new CustomBlockData(blockId, displayUUID, customModel);
+                        blockData.put(location, data);
+                    }
+                } catch (Exception e) {
+                    logger.warning("Failed to load custom block data for key: " + key);
+                }
+            }
+            
+            logger.info("Loaded " + blockData.size() + " custom blocks from disk");
+        } catch (Exception e) {
+            logger.severe("Failed to load custom blocks data: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
+    
+    /**
+     * Saves block data to disk.
+     */
+    private void saveBlockData() {
+        try {
+            FileConfiguration config = new YamlConfiguration();
+            
+            for (Map.Entry<Location, CustomBlockData> entry : blockData.entrySet()) {
+                Location loc = entry.getKey();
+                CustomBlockData data = entry.getValue();
+                
+                String key = loc.getWorld().getName() + "," +
+                            loc.getBlockX() + "," +
+                            loc.getBlockY() + "," +
+                            loc.getBlockZ();
+                
+                config.set(key + ".blockId", data.blockId);
+                config.set(key + ".displayUUID", data.displayUUID.toString());
+                config.set(key + ".customModel", data.customModel);
+            }
+            
+            config.save(dataFile);
+        } catch (IOException e) {
+            logger.severe("Failed to save custom blocks data: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Gets the BlockDisplay UUID for a block location.
+     */
+    private UUID getDisplayUUID(Location location) {
+        Location normalized = normalizeLocation(location);
+        CustomBlockData data = blockData.get(normalized);
+        return data != null ? data.displayUUID : null;
     }
     
     /**
      * Restores BlockDisplay entities for custom blocks in a chunk.
-     * Called when a chunk loads.
-     * 
-     * Note: This scans all blocks in the chunk which may be inefficient for large worlds.
-     * Consider optimizing with a block location index if performance becomes an issue.
-     * 
-     * @param chunk The chunk that was loaded
+     * Called when a chunk is loaded.
      */
-    public void restoreDisplaysInChunk(org.bukkit.Chunk chunk) {
+    public void restoreDisplaysInChunk(Chunk chunk) {
         World world = chunk.getWorld();
-        int chunkX = chunk.getX() * 16;
-        int chunkZ = chunk.getZ() * 16;
+        int chunkX = chunk.getX();
+        int chunkZ = chunk.getZ();
         
-        // Scan all blocks in the chunk for custom blocks
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = world.getMinHeight(); y < world.getMaxHeight(); y++) {
-                    Block block = world.getBlockAt(chunkX + x, y, chunkZ + z);
-                    if (block.getType() == Material.BARRIER) {
-                        RPGBlock rpgBlock = getRPGBlock(block);
-                        if (rpgBlock != null) {
-                            // Check if BlockDisplay exists
-                            UUID displayUUID = getDisplayUUID(block);
-                            if (displayUUID != null) {
-                                org.bukkit.entity.Entity entity = world.getEntity(displayUUID);
-                                if (entity == null || !(entity instanceof BlockDisplay)) {
-                                    // Display is missing, respawn it
-                                    Location location = block.getLocation();
-                                    BlockDisplay display = spawnBlockDisplay(location, rpgBlock);
-                                    if (display != null) {
-                                        // Update PDC with new UUID
-                                        org.bukkit.block.BlockState state = block.getState();
-                                        if (state instanceof org.bukkit.block.TileState) {
-                                            org.bukkit.block.TileState tileState = (org.bukkit.block.TileState) state;
-                                            PersistentDataContainer pdc = tileState.getPersistentDataContainer();
-                                            pdc.set(DISPLAY_UUID_KEY, PersistentDataType.STRING, display.getUniqueId().toString());
-                                            tileState.update(true, false);
-                                        }
-                                        displayCache.put(location, display);
-                                    }
-                                } else {
-                                    displayCache.put(block.getLocation(), (BlockDisplay) entity);
-                                }
-                            }
+        int restored = 0;
+        for (Map.Entry<Location, CustomBlockData> entry : blockData.entrySet()) {
+            Location loc = entry.getKey();
+            
+            // Check if this location is in the loaded chunk
+            if (loc.getWorld().equals(world) &&
+                loc.getBlockX() >> 4 == chunkX &&
+                loc.getBlockZ() >> 4 == chunkZ) {
+                
+                CustomBlockData data = entry.getValue();
+                
+                // Check if BlockDisplay still exists
+                org.bukkit.entity.Entity entity = world.getEntity(data.displayUUID);
+                if (entity instanceof BlockDisplay) {
+                    displayCache.put(loc, (BlockDisplay) entity);
+                } else {
+                    // BlockDisplay is missing, respawn it
+                    RPGBlock rpgBlock = BlockDictionary.blocks.get(data.blockId);
+                    if (rpgBlock != null) {
+                        BlockDisplay display = spawnBlockDisplay(loc, rpgBlock);
+                        if (display != null) {
+                            data.displayUUID = display.getUniqueId();
+                            displayCache.put(loc, display);
+                            restored++;
                         }
                     }
                 }
             }
         }
+        
+        if (restored > 0) {
+            logger.info("Restored " + restored + " BlockDisplay entities in chunk " + chunkX + "," + chunkZ);
+            saveBlockData();
+        }
     }
     
     /**
-     * Cleans up BlockDisplay entities in a chunk.
-     * Called when a chunk unloads.
-     * 
-     * Note: This scans all blocks in the chunk. If performance is a concern,
-     * consider maintaining a separate index of custom block locations.
-     * 
-     * @param chunk The chunk that was unloaded
+     * Cleans up BlockDisplay cache when a chunk unloads.
      */
-    public void cleanupDisplaysInChunk(org.bukkit.Chunk chunk) {
+    public void cleanupChunk(Chunk chunk) {
         World world = chunk.getWorld();
-        int chunkX = chunk.getX() * 16;
-        int chunkZ = chunk.getZ() * 16;
+        int chunkX = chunk.getX();
+        int chunkZ = chunk.getZ();
         
-        // Remove from cache
-        for (int x = 0; x < 16; x++) {
-            for (int z = 0; z < 16; z++) {
-                for (int y = world.getMinHeight(); y < world.getMaxHeight(); y++) {
-                    Location location = new Location(world, chunkX + x, y, chunkZ + z);
-                    displayCache.remove(location);
-                }
-            }
-        }
+        displayCache.entrySet().removeIf(entry -> {
+            Location loc = entry.getKey();
+            return loc.getWorld().equals(world) &&
+                   loc.getBlockX() >> 4 == chunkX &&
+                   loc.getBlockZ() >> 4 == chunkZ;
+        });
     }
 }

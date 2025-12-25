@@ -27,6 +27,6 @@ public class ChunkHandler implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onChunkUnload(ChunkUnloadEvent event) {
         // Clean up cache for the unloaded chunk
-        blockManager.cleanupDisplaysInChunk(event.getChunk());
+        blockManager.cleanupChunk(event.getChunk());
     }
 }

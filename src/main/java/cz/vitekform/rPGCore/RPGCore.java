@@ -114,7 +114,7 @@ public final class RPGCore extends JavaPlugin {
         }
 
         // Initialize custom block management
-        blockManager = new CustomBlockManager(getLogger());
+        blockManager = new CustomBlockManager(this, getLogger());
         progressTracker = new MiningProgressTracker();
 
         // Load items from items.yml
