@@ -1,6 +1,7 @@
 package cz.vitekform.rPGCore;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import cz.vitekform.rPGCore.blockdisplay.CustomBlockManager;
 import cz.vitekform.rPGCore.blockdisplay.MiningProgressTracker;
@@ -172,6 +173,20 @@ public final class RPGCore extends JavaPlugin {
                                             )
                             )
                             .requires(css -> css.getSender().hasPermission("rpgcore.give") || css.getSender().hasPermission("rpgcore.admin"))
+                            .build()
+            );
+            
+            // Register /rpg setblock command
+            commands.register(
+                    Commands.literal("rpgsetblock")
+                            .then(
+                                    Commands.argument("args", StringArgumentType.greedyString())
+                                            .executes(ctx -> {
+                                                handleSetBlockCommand(ctx, this);
+                                                return Command.SINGLE_SUCCESS;
+                                            })
+                            )
+                            .requires(css -> css.getSender().hasPermission("rpgcore.setblock") || css.getSender().hasPermission("rpgcore.admin"))
                             .build()
             );
         });
@@ -389,6 +404,88 @@ public final class RPGCore extends JavaPlugin {
             else {
                 ctx.getSource().getSender().sendMessage(Component.text("Unknown subcommand.", NamedTextColor.RED));
             }
+        }
+    }
+    
+    /**
+     * Handles the /rpg setblock command to place custom blocks at specified coordinates.
+     */
+    private void handleSetBlockCommand(final CommandContext<io.papermc.paper.command.brigadier.CommandSourceStack> ctx, RPGCore plugin) {
+        try {
+            // Get the string argument and split it
+            String args = ctx.getArgument("args", String.class);
+            String[] parts = args.trim().split("\\s+");
+            
+            if (parts.length != 4) {
+                ctx.getSource().getSender().sendMessage(
+                    Component.text("Usage: /rpgsetblock <x> <y> <z> <block_id>", NamedTextColor.RED)
+                );
+                return;
+            }
+            
+            // Parse coordinates
+            int x, y, z;
+            try {
+                x = Integer.parseInt(parts[0]);
+                y = Integer.parseInt(parts[1]);
+                z = Integer.parseInt(parts[2]);
+            } catch (NumberFormatException e) {
+                ctx.getSource().getSender().sendMessage(
+                    Component.text("Invalid coordinates. X, Y, and Z must be integers.", NamedTextColor.RED)
+                );
+                return;
+            }
+            
+            String blockId = parts[3];
+            
+            // Get the sender's world (use sender's world if player, otherwise use default world)
+            World world;
+            if (ctx.getSource().getSender() instanceof Player player) {
+                world = player.getWorld();
+            } else {
+                // For console, use the default world
+                world = Bukkit.getWorlds().get(0);
+            }
+            
+            // Check if the block exists
+            if (!BlockDictionary.blocks.containsKey(blockId)) {
+                ctx.getSource().getSender().sendMessage(
+                    Component.text("Block with ID '" + blockId + "' not found.", NamedTextColor.RED)
+                );
+                return;
+            }
+            
+            RPGBlock rpgBlock = BlockDictionary.blocks.get(blockId);
+            
+            // Create the location
+            Location location = new Location(world, x, y, z);
+            
+            // Check if the chunk is loaded
+            if (!world.isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+                ctx.getSource().getSender().sendMessage(
+                    Component.text("Chunk at " + x + ", " + y + ", " + z + " is not loaded.", NamedTextColor.RED)
+                );
+                return;
+            }
+            
+            // Place the custom block
+            boolean success = blockManager.placeCustomBlock(location, rpgBlock);
+            
+            if (success) {
+                ctx.getSource().getSender().sendMessage(
+                    Component.text("Placed custom block '" + blockId + "' at " + x + ", " + y + ", " + z + " in world " + world.getName() + ".", NamedTextColor.GREEN)
+                );
+            } else {
+                ctx.getSource().getSender().sendMessage(
+                    Component.text("Failed to place custom block at " + x + ", " + y + ", " + z + ".", NamedTextColor.RED)
+                );
+            }
+        } catch (Exception e) {
+            ctx.getSource().getSender().sendMessage(
+                Component.text("Error placing block: " + e.getMessage(), NamedTextColor.RED)
+            );
+            getLogger().severe("Error in /rpg setblock command: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
