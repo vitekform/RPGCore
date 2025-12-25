@@ -1,10 +1,9 @@
 package cz.vitekform.rPGCore.listeners;
 
 import cz.vitekform.rPGCore.BlockDictionary;
+import cz.vitekform.rPGCore.blockdisplay.CustomBlockManager;
 import cz.vitekform.rPGCore.objects.RPGBlock;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -15,12 +14,17 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 /**
- * Handles block place events for custom RPG blocks.
+ * Handles block place events for custom RPG blocks using BARRIER + BlockDisplay.
  */
 public class BlockPlaceHandler implements Listener {
 
     private static final NamespacedKey BLOCK_ID_KEY = new NamespacedKey("rpgcore", "rpg_block_id");
-    private static final NamespacedKey CUSTOM_MODEL_KEY = new NamespacedKey("rpgcore", "custom_block_model");
+    
+    private final CustomBlockManager blockManager;
+
+    public BlockPlaceHandler(CustomBlockManager blockManager) {
+        this.blockManager = blockManager;
+    }
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -49,24 +53,20 @@ public class BlockPlaceHandler implements Listener {
             return;
         }
         
-        // Set the block to the correct type
-        Block placedBlock = event.getBlockPlaced();
-        placedBlock.setType(rpgBlock.blockType);
+        // Cancel the event to prevent default block placement
+        event.setCancelled(true);
         
-        // Store block ID and custom model in block PDC if it's a TileState
-        org.bukkit.block.BlockState blockState = placedBlock.getState();
-        if (blockState instanceof org.bukkit.block.TileState) {
-            org.bukkit.block.TileState tileState = (org.bukkit.block.TileState) blockState;
-            PersistentDataContainer blockPdc = tileState.getPersistentDataContainer();
-            blockPdc.set(BLOCK_ID_KEY, PersistentDataType.STRING, blockId);
-            
-            // Store custom block model if present
-            if (rpgBlock.customBlockModel > 0) {
-                blockPdc.set(CUSTOM_MODEL_KEY, PersistentDataType.INTEGER, rpgBlock.customBlockModel);
-            }
-            
-            // Update the block state
-            tileState.update(true, false);
+        // Place the custom block using our manager
+        boolean placed = blockManager.placeCustomBlock(event.getBlock().getLocation(), rpgBlock);
+        
+        // If placement failed, give the item back
+        if (!placed) {
+            return;
+        }
+        
+        // Remove one item from the player's hand (if not in creative)
+        if (event.getPlayer().getGameMode() != org.bukkit.GameMode.CREATIVE) {
+            item.setAmount(item.getAmount() - 1);
         }
     }
 }

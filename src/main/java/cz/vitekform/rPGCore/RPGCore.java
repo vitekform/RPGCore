@@ -2,6 +2,8 @@ package cz.vitekform.rPGCore;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
+import cz.vitekform.rPGCore.blockdisplay.CustomBlockManager;
+import cz.vitekform.rPGCore.blockdisplay.MiningProgressTracker;
 import cz.vitekform.rPGCore.commands.args.classes.RPGCoreSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.classes.RPGiveSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.enums.RPGCoreSubcommand;
@@ -44,6 +46,10 @@ public final class RPGCore extends JavaPlugin {
 
     public static final Map<UUID, RPGPlayer> playerStorage = new HashMap<>();
     public static final Map<UUID, RPGEntity> entityStorage = new HashMap<>();
+    
+    // Custom block management
+    private CustomBlockManager blockManager;
+    private MiningProgressTracker progressTracker;
 
    public static List<Component> fancyText(List<Component> original) {
     Map<Character, Character> charMap = Map.ofEntries(
@@ -105,6 +111,10 @@ public final class RPGCore extends JavaPlugin {
         } else {
             getLogger().info(ChatColor.RED + "You are not running the latest version of RPGCore. Please update to build " + PluginUpdater.latestBuild(PluginUpdater.buildChannelString()) + " from " + PluginUpdater.buildChannelString() + " Build Channel. Using /rpg update");
         }
+
+        // Initialize custom block management
+        blockManager = new CustomBlockManager(getLogger());
+        progressTracker = new MiningProgressTracker();
 
         // Load items from items.yml
         ItemLoader itemLoader = new ItemLoader(this);
@@ -173,8 +183,17 @@ public final class RPGCore extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new PlayerDamageHandler(), this);
         Bukkit.getPluginManager().registerEvents(new EntityDamageHandler(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerEatFoodHandler(), this);
-        Bukkit.getPluginManager().registerEvents(new BlockBreakHandler(getLogger()), this);
-        Bukkit.getPluginManager().registerEvents(new BlockPlaceHandler(), this);
+        Bukkit.getPluginManager().registerEvents(new BlockBreakHandler(blockManager, progressTracker), this);
+        Bukkit.getPluginManager().registerEvents(new BlockPlaceHandler(blockManager), this);
+        Bukkit.getPluginManager().registerEvents(new ChunkHandler(blockManager), this);
+        
+        // Start mining progress cleanup task (runs every 5 seconds)
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                progressTracker.cleanupStaleProgress();
+            }
+        }.runTaskTimer(this, 100L, 100L); // 5 seconds
 
         // Load entity data
         FileConfiguration entityData = safeGetConfig("entityData.yml");
