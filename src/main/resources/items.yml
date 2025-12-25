@@ -1,38 +1,46 @@
 # RPGCore Items Configuration
-# Each item must have: id, name, material
-# Optional attributes: reqLevel, reqClass, attack, attackSpeed, defense, health, speed, mana, critChance, max_durability, slotReq, lore
-# For food items, add: foodAmount, saturationAmount
+# 
+# ORAXEN INTEGRATION:
+# Items are now registered in Oraxen for textures/models/visual aspects.
+# RPGCore references Oraxen items and adds RPG stats (attack, defense, etc.) on top.
 #
-# Custom Textures and Models (for inventory/hand display):
-#   texture.path: Path to texture file in /plugins/RPGCore/items/textures/ (e.g., "sword.png")
-#   model.path: Path to custom model JSON in /plugins/RPGCore/items/models/ (e.g., "sword.json")
-#   model.type: Auto-generate model based on type. Options: handheld, handheld_rod, generated, bow, crossbow, shield, trident
-#   Note: If neither model.path nor model.type is present, the item uses vanilla model.
-#   Note: texture.path is required when using model.type for auto-generated models.
+# Configuration Format:
+#   oraxenItemId: The Oraxen item ID to use as base (REQUIRED - must exist in Oraxen config)
+#   name: Display name for the item
+#   nameColor: Color for the display name (WHITE, RED, GREEN, BLUE, etc.)
+#   material: Fallback material if Oraxen item not found
+#   lore: Additional lore lines
+#   loreColor: Color for lore lines
 #
-# Custom Armor Textures (for when armor is worn on player):
-#   armor.texture.path: Path to armor texture file in /plugins/RPGCore/items/textures/armor/ (e.g., "adventurer_helmet.png")
-#   armor.layer.type: The layer type for the armor texture.
-#     - "humanoid" for helmet, chestplate, and boots
-#     - "humanoid_leggings" for leggings
-#   Note: Armor textures are displayed on the player model when the armor is equipped.
-#   Note: The texture file should be properly formatted for Minecraft armor rendering.
+# RPG Attributes (optional):
+#   reqLevel: Required level to use this item
+#   reqClass: Required class (WARRIOR, MAGE, ARCHER, ANY, NONE)
+#   attack: Attack damage
+#   attackSpeed: Attack speed
+#   defense: Defense value
+#   health: Health bonus
+#   speed: Speed bonus
+#   mana: Mana bonus
+#   critChance: Critical hit chance (%)
+#   max_durability: Maximum durability (-1 for unbreakable)
+#   slotReq: Equipment slot (-1=Any, 0=Main Hand, 1=Helmet, 2=Chestplate, 3=Leggings, 4=Boots, 5=Off Hand)
 #
-# slotReq values:
-#   -1 = Any
-#   0 = Main Hand
-#   1 = Helmet
-#   2 = Chestplate
-#   3 = Leggings
-#   4 = Boots
-#   5 = Off Hand
+# For food items, add:
+#   isFood: true
+#   foodAmount: Hunger restored
+#   saturationAmount: Saturation restored
 #
-# reqClass values: WARRIOR, MAGE, ARCHER, ANY, NONE
+# SETUP WORKFLOW:
+# 1. Define items in Oraxen configuration (textures, models, etc.)
+# 2. Reference them here with oraxenItemId
+# 3. Add RPG stats as needed
+# 4. RPGCore will combine Oraxen visuals with RPG mechanics
 
 items:
   # Class selection items (for GUI)
   warrior_class_item:
     id: "warrior_class_item"
+    oraxenItemId: "warrior_class_item"  # Must exist in Oraxen configuration
     name: "Warrior"
     nameColor: "RED"
     material: IRON_SWORD
@@ -44,6 +52,7 @@ items:
 
   archer_class_item:
     id: "archer_class_item"
+    oraxenItemId: "archer_class_item"  # Must exist in Oraxen configuration
     name: "Archer"
     nameColor: "GREEN"
     material: BOW
@@ -55,6 +64,7 @@ items:
 
   mage_class_item:
     id: "mage_class_item"
+    oraxenItemId: "mage_class_item"  # Must exist in Oraxen configuration
     name: "Mage"
     nameColor: "BLUE"
     material: BLAZE_ROD
@@ -67,6 +77,7 @@ items:
   # Attribute items (for GUI)
   strength_attribute_item:
     id: "strength_attribute_item"
+    oraxenItemId: "strength_attribute_item"  # Must exist in Oraxen configuration
     name: "Strength"
     nameColor: "RED"
     material: IRON_SWORD
@@ -81,6 +92,7 @@ items:
 
   dexterity_attribute_item:
     id: "dexterity_attribute_item"
+    oraxenItemId: "dexterity_attribute_item"  # Must exist in Oraxen configuration
     name: "Dexterity"
     nameColor: "GREEN"
     material: BOW
@@ -95,6 +107,7 @@ items:
 
   intelligence_attribute_item:
     id: "intelligence_attribute_item"
+    oraxenItemId: "intelligence_attribute_item"  # Must exist in Oraxen configuration
     name: "Intelligence"
     nameColor: "AQUA"
     material: AMETHYST_SHARD

@@ -142,14 +142,8 @@ public class ItemLoader {
         item.max_durability = section.getInt("max_durability", -1);
         item.slotReq = section.getInt("slotReq", -1);
         
-        // Resource pack related attributes
-        item.texturePath = section.getString("texture.path", null);
-        item.modelPath = section.getString("model.path", null);
-        item.modelType = section.getString("model.type", null);
-        
-        // Armor-specific resource pack attributes
-        item.armorTexturePath = section.getString("armor.texture.path", null);
-        item.armorLayerType = section.getString("armor.layer.type", null);
+        // Oraxen integration - load Oraxen item ID
+        item.oraxenItemId = section.getString("oraxenItemId", null);
 
         // Food-specific attributes
         if (item instanceof RPGFoodItem foodItem) {

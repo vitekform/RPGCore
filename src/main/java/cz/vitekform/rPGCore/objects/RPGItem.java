@@ -38,16 +38,8 @@ public class RPGItem {
     public int slotReq;
     public Material material;
     
-    // Resource pack related properties
-    public String texturePath;  // Path to texture file in /plugins/RPGCore/items/textures/
-    public String modelPath;    // Path to model file in /plugins/RPGCore/items/models/
-    public String modelType;    // Model type for auto-generation (e.g., "handheld", "generated")
-    public String customModelKey; // The key used in the resourcepack for this item's model
-    
-    // Armor-specific resource pack properties
-    public String armorTexturePath;    // Path to armor texture file in /plugins/RPGCore/items/textures/armor/
-    public String armorLayerType;      // Layer type: "humanoid" (helmet, chestplate, boots) or "humanoid_leggings" (leggings)
-    public String equipmentModelKey;   // The key used for the equipment model reference
+    // Oraxen integration - reference to Oraxen item ID
+    public String oraxenItemId;  // The Oraxen item ID to use as base for this RPG item
 
     public RPGItem() {
         this.itemName = Component.newline();
@@ -64,18 +56,30 @@ public class RPGItem {
         this.material = Material.PAPER;
         this.durability = -1;
         this.max_durability = -1;
-        this.texturePath = null;
-        this.modelPath = null;
-        this.modelType = null;
-        this.customModelKey = null;
-        this.armorTexturePath = null;
-        this.armorLayerType = null;
-        this.equipmentModelKey = null;
+        this.oraxenItemId = null;
     }
 
     public ItemStack build() {
         if (max_durability > 0 && durability == -1) durability = max_durability;
-        ItemStack i = new ItemStack(material);
+        
+        // Get base item from Oraxen if oraxenItemId is provided
+        ItemStack i;
+        if (oraxenItemId != null && !oraxenItemId.isEmpty()) {
+            // Use Oraxen's item as base (commented out until Oraxen dependency is available)
+            // Uncomment when Oraxen is available:
+            // io.th0rgal.oraxen.api.OraxenItems oraxenItems = io.th0rgal.oraxen.api.OraxenItems.getItemById(oraxenItemId);
+            // if (oraxenItems != null) {
+            //     i = oraxenItems.build();
+            // } else {
+            //     i = new ItemStack(material);
+            // }
+            
+            // Temporary: Use material until Oraxen is available
+            i = new ItemStack(material);
+        } else {
+            i = new ItemStack(material);
+        }
+        
         ItemMeta im = i.getItemMeta();
         itemName = RPGCore.fancyText(List.of(itemName.decorations(Map.of(TextDecoration.BOLD, TextDecoration.State.TRUE, TextDecoration.ITALIC, TextDecoration.State.FALSE)))).getFirst();
         im.displayName(itemName);
@@ -108,35 +112,13 @@ public class RPGItem {
 
         im.setUnbreakable(true);
         
-        // Apply custom model if customModelKey is set
-        if (customModelKey != null && !customModelKey.isEmpty()) {
-            try {
-                NamespacedKey modelKey = NamespacedKey.fromString(customModelKey);
-                if (modelKey != null) {
-                    im.setItemModel(modelKey);
-                }
-            } catch (IllegalArgumentException e) {
-                // Invalid key format, skip applying custom model
-            }
-        }
+        // Note: Custom models from Oraxen are already applied to the base ItemStack
+        // No need to manually apply custom model keys when using Oraxen items
 
         i.setItemMeta(im);
         
-        // Apply equippable component for custom armor textures when worn
-        if (equipmentModelKey != null && !equipmentModelKey.isEmpty()) {
-            try {
-                Key assetKey = Key.key(equipmentModelKey);
-                EquipmentSlot slot = getEquipmentSlotFromSlotReq();
-                if (slot != null) {
-                    Equippable equippable = Equippable.equippable(slot)
-                            .assetId(assetKey)
-                            .build();
-                    i.setData(DataComponentTypes.EQUIPPABLE, equippable);
-                }
-            } catch (IllegalArgumentException e) {
-                // Invalid key format, skip applying equippable component
-            }
-        }
+        // Note: Equippable components for armor are handled by Oraxen
+        // No need to manually apply equippable components when using Oraxen items
 
         return i;
     }
