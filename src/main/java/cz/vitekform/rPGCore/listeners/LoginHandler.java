@@ -131,6 +131,11 @@ public class LoginHandler implements Listener {
      * @param player The player to send the resource pack to
      */
     private void applyResourcePack(Player player) {
+        if (RPGCore.oraxenPresent) {
+            return;
+            // Because oraxen does this
+        }
+
         if (!ResourcePackGenerator.isResourcePackReady()) {
             return;
         }
