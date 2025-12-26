@@ -4,3 +4,9 @@ main: cz.vitekform.rPGCore.RPGCore
 api-version: '1.21'
 authors: [ ganamaga ]
 website: https://ganamaga.me
+dependencies:
+  server:
+    Oraxen:
+      load: AFTER
+      required: false # Adds handling for Oraxen blocks
+      join-classpath: true

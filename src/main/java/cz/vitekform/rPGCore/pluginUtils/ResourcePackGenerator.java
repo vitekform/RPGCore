@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import cz.vitekform.rPGCore.ItemDictionary;
+import cz.vitekform.rPGCore.RPGCore;
 import cz.vitekform.rPGCore.objects.RPGItem;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -168,25 +169,38 @@ public class ResourcePackGenerator {
 
             // Upload to catbox.moe if needed
             if (needsUpload) {
-                logger.info("Uploading resource pack to catbox.moe...");
-                String uploadedUrl = uploader.upload(finalZip);
-                
-                if (uploadedUrl != null) {
-                    // Store the URL and hash
-                    config.set("url", uploadedUrl);
-                    config.set("sha1", sha1Hash);
-                    config.save(configFile);
-                    
-                    resourcePackUrl = uploadedUrl;
-                    resourcePackHash = hexStringToByteArray(sha1Hash);
-                    resourcePackReady = true;
-                    
-                    logger.info("Resource pack uploaded successfully!");
-                    logger.info("URL: " + uploadedUrl);
-                    logger.info("SHA-1: " + sha1Hash);
-                } else {
-                    logger.severe("Failed to upload resource pack to catbox.moe!");
-                    resourcePackReady = false;
+                if (!RPGCore.oraxenPresent) {
+                    logger.info("Uploading resource pack to catbox.moe...");
+                    String uploadedUrl = uploader.upload(finalZip);
+
+                    if (uploadedUrl != null) {
+                        // Store the URL and hash
+                        config.set("url", uploadedUrl);
+                        config.set("sha1", sha1Hash);
+                        config.save(configFile);
+
+                        resourcePackUrl = uploadedUrl;
+                        resourcePackHash = hexStringToByteArray(sha1Hash);
+                        resourcePackReady = true;
+
+                        logger.info("Resource pack uploaded successfully!");
+                        logger.info("URL: " + uploadedUrl);
+                        logger.info("SHA-1: " + sha1Hash);
+                    } else {
+                        logger.severe("Failed to upload resource pack to catbox.moe!");
+                        resourcePackReady = false;
+                    }
+                }
+                else {
+                    // Copy the pack into /plugins/Oraxen/pack/uploads
+                    File oraxenUploads = new File(plugin.getServer().getPluginManager().getPlugin("Oraxen").getDataFolder(), "pack/uploads");
+                    if (!oraxenUploads.exists() && !oraxenUploads.mkdirs()) {
+                        logger.severe("Failed to create Oraxen uploads directory: " + oraxenUploads.getAbsolutePath());
+                        resourcePackReady = false;
+                        return;
+                    }
+                    File destFile = new File(oraxenUploads, "rpgcore_resourcepack.zip");
+                    Files.copy(finalZip.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
             }
 

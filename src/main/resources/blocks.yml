@@ -1,0 +1,10 @@
+# THIS ONLY WORKS IF ORAXEN IS INSTALLED
+# THIS IS ONLY FOR HANDLING OF ORAXEN BLOCKS THROUGH RPGCore. NOT FOR REGISTERING THE BLOCKS THEMSELVES
+# FOR REGISTERING OF THE BLOCKS GO INTO /plugins/Oraxen/
+# EXAMPLE ENTRIES
+blocks:
+  compressed_cobblestone:
+    exp: 5 # Grants 5 experience when broken (RPGCore exp)
+    drops:
+      - "minecraft:cobblestone 9" # Drops 9 cobblestone when broken (this doesn't disable Oraxen drops!)
+      - "rpg:stone_shard 1" # Drops 1 custom item "stone_shard" from RPGCore
