@@ -5,14 +5,21 @@
 # Custom Textures and Models:
 #   texture.path: Path to texture file in /plugins/RPGCore/entities/textures/ (e.g., "bandit.png")
 #   model.path: Path to custom model JSON in /plugins/RPGCore/entities/models/ (e.g., "bandit.json")
-#   Note: Custom models for entities are displayed using ItemDisplay entities riding on the main entity
-#   Note: The main entity will be made invisible when a custom model is applied
+#   
+#   How custom models work:
+#   - When spawned, the entity will have an ItemDisplay entity riding on top of it
+#   - The ItemDisplay shows your custom model
+#   - The base entity is made invisible
+#   - Only specify texture.path to auto-generate a simple model
+#   - Or specify both texture.path and model.path for full control
 #
 # entityType: Valid Minecraft entity types (e.g., ZOMBIE, SKELETON, VINDICATOR, etc.)
 # drops: List of item IDs from items.yml that this entity drops when defeated
+#
+# See ENTITY_CUSTOMIZATION.md for detailed guide on creating custom models/textures
 
 entities:
-  # Example custom entity
+  # Example basic entity
   bandit_tutorial_melee:
     id: "bandit_tutorial_melee"
     visibleName: "Bandit"
@@ -28,14 +35,15 @@ entities:
     isBoss: false
     isFriendly: false
     hasVisibleName: true
-    # Custom model/texture (uncomment to enable)
+    # Uncomment to add custom texture (will auto-generate model):
     # texture.path: "bandit.png"
+    # Uncomment to add custom model file:
     # model.path: "bandit.json"
 
-  # Example boss entity
+  # Example boss entity with custom appearance
   # goblin_king:
   #   id: "goblin_king"
-  #   visibleName: "Goblin King"
+  #   visibleName: "§6Goblin King"
   #   entityType: ZOMBIE
   #   level: 10
   #   maxHealth: 200.0
@@ -51,3 +59,23 @@ entities:
   #   hasVisibleName: true
   #   texture.path: "goblin_king.png"
   #   model.path: "goblin_king.json"
+
+  # Example custom entity with only texture (auto-generated model)
+  # forest_spirit:
+  #   id: "forest_spirit"
+  #   visibleName: "§aForest Spirit"
+  #   entityType: ALLAY
+  #   level: 3
+  #   maxHealth: 30.0
+  #   health: 30.0
+  #   attack: 3.0
+  #   defense: 1
+  #   speed: 0.3
+  #   experienceAfterDefeat: 15
+  #   drops: []
+  #   isBoss: false
+  #   isFriendly: true
+  #   hasVisibleName: true
+  #   # Only texture - model will be auto-generated
+  #   texture.path: "forest_spirit.png"
+

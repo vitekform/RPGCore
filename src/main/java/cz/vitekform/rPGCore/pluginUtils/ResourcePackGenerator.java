@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import cz.vitekform.rPGCore.EntityDictionary;
 import cz.vitekform.rPGCore.ItemDictionary;
 import cz.vitekform.rPGCore.RPGCore;
+import cz.vitekform.rPGCore.objects.RPGEntity;
 import cz.vitekform.rPGCore.objects.RPGItem;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -22,7 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Generates a resource pack containing custom models and textures for RPGCore items.
+ * Generates a resource pack containing custom models and textures for RPGCore items and entities.
  * <p>
  * Items can specify:
  * - texture.path: Path to texture file in /plugins/RPGCore/items/textures/
@@ -113,7 +115,7 @@ public class ResourcePackGenerator {
         Map<String, RPGItem> itemsWithCustomAssets = collectCustomAssetItems();
         
         // Collect entities that need custom models/textures
-        Map<String, cz.vitekform.rPGCore.objects.RPGEntity> entitiesWithCustomAssets = collectCustomAssetEntities();
+        Map<String, RPGEntity> entitiesWithCustomAssets = collectCustomAssetEntities();
 
         if (itemsWithCustomAssets.isEmpty() && entitiesWithCustomAssets.isEmpty()) {
             logger.info("No items or entities with custom textures/models found. Skipping resource pack generation.");
@@ -294,11 +296,11 @@ public class ResourcePackGenerator {
         return result;
     }
 
-    private Map<String, cz.vitekform.rPGCore.objects.RPGEntity> collectCustomAssetEntities() {
-        Map<String, cz.vitekform.rPGCore.objects.RPGEntity> result = new LinkedHashMap<>();
+    private Map<String, RPGEntity> collectCustomAssetEntities() {
+        Map<String, RPGEntity> result = new LinkedHashMap<>();
 
-        for (Map.Entry<String, cz.vitekform.rPGCore.objects.RPGEntity> entry : cz.vitekform.rPGCore.EntityDictionary.entities.entrySet()) {
-            cz.vitekform.rPGCore.objects.RPGEntity entity = entry.getValue();
+        for (Map.Entry<String, RPGEntity> entry : EntityDictionary.entities.entrySet()) {
+            RPGEntity entity = entry.getValue();
             // Entity needs custom assets if it has modelPath or texturePath defined
             if (entity.modelPath != null || entity.texturePath != null) {
                 result.put(entry.getKey(), entity);
@@ -308,7 +310,7 @@ public class ResourcePackGenerator {
         return result;
     }
 
-    private void generateResourcePack(Map<String, RPGItem> items, Map<String, cz.vitekform.rPGCore.objects.RPGEntity> entities, File outputFile) throws IOException {
+    private void generateResourcePack(Map<String, RPGItem> items, Map<String, RPGEntity> entities, File outputFile) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile))) {
             // Add pack.mcmeta
             addPackMcmeta(zos);
@@ -322,9 +324,9 @@ public class ResourcePackGenerator {
             }
 
             // Process each entity
-            for (Map.Entry<String, cz.vitekform.rPGCore.objects.RPGEntity> entry : entities.entrySet()) {
+            for (Map.Entry<String, RPGEntity> entry : entities.entrySet()) {
                 String entityKey = entry.getKey();
-                cz.vitekform.rPGCore.objects.RPGEntity entity = entry.getValue();
+                RPGEntity entity = entry.getValue();
 
                 processEntity(zos, entityKey, entity);
             }
@@ -562,7 +564,7 @@ public class ResourcePackGenerator {
      * Processes an entity and adds its custom model/texture to the resource pack.
      * Entity models are stored as item models since they're displayed via ItemDisplay entities.
      */
-    private void processEntity(ZipOutputStream zos, String entityKey, cz.vitekform.rPGCore.objects.RPGEntity entity) throws IOException {
+    private void processEntity(ZipOutputStream zos, String entityKey, RPGEntity entity) throws IOException {
         String modelKeyName = entityKey.toLowerCase().replace(" ", "_");
         boolean modelAdded = false;
 

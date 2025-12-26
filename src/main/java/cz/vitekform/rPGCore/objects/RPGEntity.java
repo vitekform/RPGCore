@@ -264,27 +264,36 @@ public class RPGEntity {
             ItemStack displayItem = new ItemStack(Material.PAPER);
             org.bukkit.inventory.meta.ItemMeta meta = displayItem.getItemMeta();
             
-            // Set the custom model key
-            NamespacedKey modelKey = NamespacedKey.fromString(customModelKey);
-            if (modelKey != null) {
-                meta.setItemModel(modelKey);
-                displayItem.setItemMeta(meta);
-                
-                // Set the item on the display entity
-                display.setItemStack(displayItem);
-                
-                // Configure display properties
-                display.setBillboard(Display.Billboard.VERTICAL);  // Face the player
-                display.setViewRange(64.0f);  // Visible from 64 blocks away
-                
-                // Make the display entity ride the main entity
-                entity.addPassenger(display);
-                
-                // Make the main entity invisible so only custom model shows
-                entity.setInvisible(true);
-                
-                // Store the display entity UUID
-                this.displayEntityUUID = display.getUniqueId();
+            try {
+                // Set the custom model key
+                NamespacedKey modelKey = NamespacedKey.fromString(customModelKey);
+                if (modelKey != null) {
+                    meta.setItemModel(modelKey);
+                    displayItem.setItemMeta(meta);
+                    
+                    // Set the item on the display entity
+                    display.setItemStack(displayItem);
+                    
+                    // Configure display properties
+                    display.setBillboard(Display.Billboard.VERTICAL);  // Face the player
+                    display.setViewRange(64.0f);  // Visible from 64 blocks away
+                    
+                    // Make the display entity ride the main entity
+                    entity.addPassenger(display);
+                    
+                    // Make the main entity invisible so only custom model shows
+                    entity.setInvisible(true);
+                    
+                    // Store the display entity UUID
+                    this.displayEntityUUID = display.getUniqueId();
+                } else {
+                    // Invalid key format, clean up display entity
+                    display.remove();
+                }
+            } catch (IllegalArgumentException e) {
+                // Invalid key format, clean up display entity
+                display.remove();
+                Bukkit.getLogger().warning("Invalid custom model key for entity: " + customModelKey);
             }
         } catch (Exception e) {
             // If custom model application fails, log warning but don't crash
