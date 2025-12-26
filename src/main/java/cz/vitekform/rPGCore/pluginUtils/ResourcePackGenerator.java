@@ -4,8 +4,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import cz.vitekform.rPGCore.EntityDictionary;
 import cz.vitekform.rPGCore.ItemDictionary;
 import cz.vitekform.rPGCore.RPGCore;
+import cz.vitekform.rPGCore.objects.RPGEntity;
 import cz.vitekform.rPGCore.objects.RPGItem;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -22,7 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Generates a resource pack containing custom models and textures for RPGCore items.
+ * Generates a resource pack containing custom models and textures for RPGCore items and entities.
  * <p>
  * Items can specify:
  * - texture.path: Path to texture file in /plugins/RPGCore/items/textures/
@@ -46,6 +48,8 @@ public class ResourcePackGenerator {
     private final File texturesFolder;
     private final File modelsFolder;
     private final File armorTexturesFolder;
+    private final File entityTexturesFolder;
+    private final File entityModelsFolder;
     private final File generatedFolder;
     private final Gson gson;
     private final CatboxUploader uploader;
@@ -62,6 +66,8 @@ public class ResourcePackGenerator {
         this.texturesFolder = new File(dataFolder, "items/textures");
         this.modelsFolder = new File(dataFolder, "items/models");
         this.armorTexturesFolder = new File(dataFolder, "items/textures/armor");
+        this.entityTexturesFolder = new File(dataFolder, "entities/textures");
+        this.entityModelsFolder = new File(dataFolder, "entities/models");
         this.generatedFolder = new File(dataFolder, "generated");
         this.gson = new GsonBuilder().setPrettyPrinting().create();
         this.uploader = new CatboxUploader(logger);
@@ -92,7 +98,7 @@ public class ResourcePackGenerator {
     }
 
     /**
-     * Generates the resource pack for all loaded items.
+     * Generates the resource pack for all loaded items and entities.
      * Also handles uploading to catbox.moe and verifying the stored URL.
      */
     public void generate() {
@@ -107,21 +113,25 @@ public class ResourcePackGenerator {
 
         // Collect items that need custom models/textures
         Map<String, RPGItem> itemsWithCustomAssets = collectCustomAssetItems();
+        
+        // Collect entities that need custom models/textures
+        Map<String, RPGEntity> entitiesWithCustomAssets = collectCustomAssetEntities();
 
-        if (itemsWithCustomAssets.isEmpty()) {
-            logger.info("No items with custom textures/models found. Skipping resource pack generation.");
+        if (itemsWithCustomAssets.isEmpty() && entitiesWithCustomAssets.isEmpty()) {
+            logger.info("No items or entities with custom textures/models found. Skipping resource pack generation.");
             resourcePackReady = false;
             return;
         }
 
         logger.info("Found " + itemsWithCustomAssets.size() + " items with custom assets.");
+        logger.info("Found " + entitiesWithCustomAssets.size() + " entities with custom assets.");
 
         // Generate the resource pack
         File tempZip = new File(generatedFolder, "resourcepack.zip.tmp");
         File finalZip = new File(generatedFolder, "resourcepack.zip");
 
         try {
-            generateResourcePack(itemsWithCustomAssets, tempZip);
+            generateResourcePack(itemsWithCustomAssets, entitiesWithCustomAssets, tempZip);
 
             String newHash = calculateFileHash(tempZip);
             boolean packChanged = true;
@@ -261,6 +271,12 @@ public class ResourcePackGenerator {
         if (!armorTexturesFolder.exists() && !armorTexturesFolder.mkdirs()) {
             logger.warning("Failed to create armor textures directory: " + armorTexturesFolder.getAbsolutePath());
         }
+        if (!entityTexturesFolder.exists() && !entityTexturesFolder.mkdirs()) {
+            logger.warning("Failed to create entity textures directory: " + entityTexturesFolder.getAbsolutePath());
+        }
+        if (!entityModelsFolder.exists() && !entityModelsFolder.mkdirs()) {
+            logger.warning("Failed to create entity models directory: " + entityModelsFolder.getAbsolutePath());
+        }
         if (!generatedFolder.exists() && !generatedFolder.mkdirs()) {
             logger.warning("Failed to create generated directory: " + generatedFolder.getAbsolutePath());
         }
@@ -280,7 +296,21 @@ public class ResourcePackGenerator {
         return result;
     }
 
-    private void generateResourcePack(Map<String, RPGItem> items, File outputFile) throws IOException {
+    private Map<String, RPGEntity> collectCustomAssetEntities() {
+        Map<String, RPGEntity> result = new LinkedHashMap<>();
+
+        for (Map.Entry<String, RPGEntity> entry : EntityDictionary.entities.entrySet()) {
+            RPGEntity entity = entry.getValue();
+            // Entity needs custom assets if it has modelPath or texturePath defined
+            if (entity.modelPath != null || entity.texturePath != null) {
+                result.put(entry.getKey(), entity);
+            }
+        }
+
+        return result;
+    }
+
+    private void generateResourcePack(Map<String, RPGItem> items, Map<String, RPGEntity> entities, File outputFile) throws IOException {
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputFile))) {
             // Add pack.mcmeta
             addPackMcmeta(zos);
@@ -291,6 +321,14 @@ public class ResourcePackGenerator {
                 RPGItem item = entry.getValue();
 
                 processItem(zos, itemKey, item);
+            }
+
+            // Process each entity
+            for (Map.Entry<String, RPGEntity> entry : entities.entrySet()) {
+                String entityKey = entry.getKey();
+                RPGEntity entity = entry.getValue();
+
+                processEntity(zos, entityKey, entity);
             }
         }
     }
@@ -520,6 +558,95 @@ public class ResourcePackGenerator {
             return filename.substring(lastDot);
         }
         return ".png";
+    }
+
+    /**
+     * Processes an entity and adds its custom model/texture to the resource pack.
+     * Entity models are stored as item models since they're displayed via ItemDisplay entities.
+     */
+    private void processEntity(ZipOutputStream zos, String entityKey, RPGEntity entity) throws IOException {
+        String modelKeyName = entityKey.toLowerCase().replace(" ", "_");
+        boolean modelAdded = false;
+
+        // Handle texture
+        if (entity.texturePath != null) {
+            addEntityTexture(zos, entityKey, entity.texturePath);
+        }
+
+        // Handle model
+        if (entity.modelPath != null) {
+            // Use custom model file
+            if (addCustomEntityModel(zos, entityKey, entity.modelPath)) {
+                modelAdded = true;
+            }
+        } else if (entity.texturePath != null) {
+            // Generate a simple generated model for the texture
+            generateEntityModel(zos, entityKey);
+            modelAdded = true;
+        }
+
+        // Only set the customModelKey and create item definition if a model was actually added
+        if (modelAdded) {
+            entity.customModelKey = NAMESPACE + ":" + modelKeyName;
+            // Add item definition file for Minecraft 1.21.4+
+            addItemDefinition(zos, entityKey, modelKeyName);
+        }
+    }
+
+    private void addEntityTexture(ZipOutputStream zos, String entityKey, String texturePath) throws IOException {
+        File textureFile = new File(entityTexturesFolder, texturePath);
+
+        if (!textureFile.exists()) {
+            logger.warning("Entity texture file not found for entity " + entityKey + ": " + texturePath);
+            return;
+        }
+
+        String textureKeyName = entityKey.toLowerCase().replace(" ", "_");
+        String zipPath = "assets/" + NAMESPACE + "/textures/item/" + textureKeyName + getFileExtension(texturePath);
+
+        zos.putNextEntry(new ZipEntry(zipPath));
+        Files.copy(textureFile.toPath(), zos);
+        zos.closeEntry();
+
+        logger.info("Added entity texture for " + entityKey + ": " + zipPath);
+    }
+
+    private boolean addCustomEntityModel(ZipOutputStream zos, String entityKey, String modelPath) throws IOException {
+        File modelFile = new File(entityModelsFolder, modelPath);
+
+        if (!modelFile.exists()) {
+            logger.warning("Entity model file not found for entity " + entityKey + ": " + modelPath);
+            return false;
+        }
+
+        String modelKeyName = entityKey.toLowerCase().replace(" ", "_");
+        String zipPath = "assets/" + NAMESPACE + "/models/item/" + modelKeyName + ".json";
+
+        zos.putNextEntry(new ZipEntry(zipPath));
+        Files.copy(modelFile.toPath(), zos);
+        zos.closeEntry();
+
+        logger.info("Added custom entity model for " + entityKey + ": " + zipPath);
+        return true;
+    }
+
+    private void generateEntityModel(ZipOutputStream zos, String entityKey) throws IOException {
+        String modelKeyName = entityKey.toLowerCase().replace(" ", "_");
+        String zipPath = "assets/" + NAMESPACE + "/models/item/" + modelKeyName + ".json";
+
+        // Create a simple generated model for the entity texture
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:item/generated");
+        
+        JsonObject textures = new JsonObject();
+        textures.addProperty("layer0", NAMESPACE + ":item/" + modelKeyName);
+        model.add("textures", textures);
+
+        zos.putNextEntry(new ZipEntry(zipPath));
+        zos.write(gson.toJson(model).getBytes());
+        zos.closeEntry();
+
+        logger.info("Generated entity model for " + entityKey + ": " + zipPath);
     }
 
     private String calculateFileHash(File file) throws IOException, NoSuchAlgorithmException {
