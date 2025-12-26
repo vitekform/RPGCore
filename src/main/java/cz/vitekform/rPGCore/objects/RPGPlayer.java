@@ -287,8 +287,7 @@ public class RPGPlayer {
 
     public void handleExpAdd(int experienceAfterDefeat) {
         this.exp += experienceAfterDefeat;
-        int currentLevel = this.level;
-        while (this.exp >= reqExpForLevel(currentLevel + 1)) {
+        while (this.exp >= reqExpForLevel(this.level + 1)) {
             this.levelUp();
         }
     }

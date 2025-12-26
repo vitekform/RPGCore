@@ -6,6 +6,7 @@ import cz.vitekform.rPGCore.commands.args.classes.RPGCoreSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.classes.RPGiveSubcommandArgument;
 import cz.vitekform.rPGCore.commands.args.enums.RPGCoreSubcommand;
 import cz.vitekform.rPGCore.listeners.*;
+import cz.vitekform.rPGCore.listeners.hooks.OraxenHook;
 import cz.vitekform.rPGCore.objects.*;
 import cz.vitekform.rPGCore.pluginUtils.PluginUpdater;
 import cz.vitekform.rPGCore.pluginUtils.ResourcePackGenerator;
@@ -44,8 +45,13 @@ public final class RPGCore extends JavaPlugin {
 
     public static final Map<UUID, RPGPlayer> playerStorage = new HashMap<>();
     public static final Map<UUID, RPGEntity> entityStorage = new HashMap<>();
+    public static boolean oraxenPresent;
+    public static final Map<String, List<ItemStack>> oraxenBlocksRPGDropsCache = new HashMap<>();
+    public static final Map<String, List<ItemStack>> oraxenBlocksVanillaDropsCache = new HashMap<>();
+    public static final Map<String, Integer> oraxenBlocksExperienceCache = new HashMap<>();
 
-   public static List<Component> fancyText(List<Component> original) {
+
+    public static List<Component> fancyText(List<Component> original) {
     Map<Character, Character> charMap = Map.ofEntries(
         Map.entry('a', 'ᴀ'), Map.entry('A', 'ᴀ'),
         Map.entry('b', 'ʙ'), Map.entry('B', 'ʙ'),
@@ -99,6 +105,19 @@ public final class RPGCore extends JavaPlugin {
     @Override
     public void onEnable() {
         getLogger().info(ChatColor.YELLOW + "Loading ganamaga's RPGCore...");
+
+        getLogger().info(ChatColor.YELLOW + "Checking for Oraxen...");
+        oraxenPresent = false;
+        for (Plugin pl : getServer().getPluginManager().getPlugins()) {
+            if (pl.getName().equalsIgnoreCase("oraxen")) {
+                oraxenPresent = true;
+            }
+        }
+
+        getLogger().info(ChatColor.GREEN + "Done checking for Oraxen!");
+        if (!oraxenPresent) {
+            getLogger().info(ChatColor.RED + "Oraxen is not installed on the server! This will prevent you from hooking RPGCore to Oraxen (essentially only block handling)!");
+        }
 
         if (PluginUpdater.isLatest()) {
             getLogger().info(ChatColor.GREEN + "You are running the latest version of RPGCore.");
@@ -197,6 +216,65 @@ public final class RPGCore extends JavaPlugin {
                 entityStorage.put(uuid, entity);
             }
         }
+
+        // Hooks
+        getLogger().info(ChatColor.YELLOW + "Hooking onto other plugins...");
+        if (oraxenPresent) {
+            getLogger().info(ChatColor.YELLOW + "Hooking into Oraxen...");
+
+            // Load blocks.yml
+            FileConfiguration blocksConfig = safeGetConfig("blocks.yml");
+            // Get all entries under "blocks." (only one level deep)
+            if (blocksConfig.contains("blocks")) {
+                for (String key : blocksConfig.getConfigurationSection("blocks").getKeys(false)) {
+                    String path = "blocks." + key + ".";
+                    List<ItemStack> rpgDrops = new ArrayList<>();
+                    List<ItemStack> vanillaDrops = new ArrayList<>();
+                    List<String> rpgDropStrings = blocksConfig.getStringList(path + "drops");
+                    for (String drop : rpgDropStrings) {
+                        if (drop.startsWith("rpg:")) {
+                            // schema rpg:item_name amount
+                            String usableDrop = drop.replace("rpg:", "");
+                            int amount = Integer.parseInt(usableDrop.split(" ")[1]);
+                            usableDrop = usableDrop.split(" ")[0];
+                            if (ItemDictionary.items.containsKey(usableDrop)) {
+                                rpgDrops.add(ItemDictionary.items.get(usableDrop).build(amount));
+                            }
+                            else {
+                                Bukkit.getLogger().warning("RPG Item " + usableDrop + " not found in items.yml! Skipping RPG drop for Oraxen block " + key + " in blocks.yml.");
+                            }
+                        }
+                        else if (drop.startsWith("minecraft:")) {
+                            // schema minecraft:item_name amount
+                            String usableDrop = drop.replace("minecraft:", "");
+                            int amount = Integer.parseInt(usableDrop.split(" ")[1]);
+                            usableDrop = usableDrop.split(" ")[0];
+                            Material mat = Material.getMaterial(usableDrop.toUpperCase());
+                            if (mat != null) {
+                                ItemStack itemStack = new ItemStack(mat, amount);
+                                vanillaDrops.add(itemStack);
+                            }
+                            else {
+                                Bukkit.getLogger().warning("Vanilla Item " + usableDrop + " not found! Skipping vanilla drop for Oraxen block " + key + " in blocks.yml.");
+                            }
+                        }
+                    }
+                    oraxenBlocksRPGDropsCache.put(key, rpgDrops);
+                    oraxenBlocksVanillaDropsCache.put(key, vanillaDrops);
+                    int experience = blocksConfig.getInt(path + "experience", 0);
+                    oraxenBlocksExperienceCache.put(key, experience);
+                }
+            }
+
+            getServer().getPluginManager().registerEvents(new OraxenHook(), this);
+
+            getLogger().info(ChatColor.GREEN + "Hooked into Oraxen!");
+        }
+        else {
+            getLogger().info(ChatColor.YELLOW + "Oraxen not present! Skipping!");
+        }
+        getLogger().info(ChatColor.GREEN + "Hooking done!");
+
         super.onEnable();
         getLogger().info(ChatColor.GREEN + "RPGCore Loaded!");
     }

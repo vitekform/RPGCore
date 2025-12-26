@@ -2,8 +2,8 @@ name: RPGCore
 version: '1.0'
 main: cz.vitekform.rPGCore.RPGCore
 api-version: '1.21'
-authors: [ vitekform ]
-website: https://vitekform.cz
+authors: [ ganamaga ]
+website: https://ganamaga.me
 commands:
   rpgcore:
     description: Main command for RPGCore
@@ -12,6 +12,5 @@ commands:
       - rpg
       - rpgc
       - core
-  rpgive:
-    description: Give item to player
-    usage: /rpgive <item>
+softdepend:
+  - Oraxen

@@ -26,5 +26,10 @@
       <option name="name" value="JBoss Community repository" />
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="oraxen" />
+      <option name="name" value="Oraxen Repository" />
+      <option name="url" value="https://repo.oraxen.com/releases" />
+    </remote-repository>
   </component>
 </project>
