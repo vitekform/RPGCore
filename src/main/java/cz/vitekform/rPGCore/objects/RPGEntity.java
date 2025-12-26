@@ -5,12 +5,16 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +43,11 @@ public class RPGEntity {
     public boolean hasVisibleName;
     public EntityType entityType;
 
+    // Custom model/texture properties for resource pack
+    public String modelPath;       // Path to custom model file in /plugins/RPGCore/entities/models/
+    public String texturePath;     // Path to custom texture file in /plugins/RPGCore/entities/textures/
+    public String customModelKey;  // The key used in the resourcepack for this entity's model
+
     // Equipment slots
     private ItemStack helmet;
     private ItemStack chestplate;
@@ -49,6 +58,7 @@ public class RPGEntity {
 
     // Reference to actual entity
     private UUID entityUUID;
+    private UUID displayEntityUUID;  // For custom model display entity
     private BossBar bossBar;
 
     public RPGEntity() {
@@ -64,6 +74,9 @@ public class RPGEntity {
         this.isBoss = false;
         this.isFriendly = false;
         this.hasVisibleName = false;
+        this.modelPath = null;
+        this.texturePath = null;
+        this.customModelKey = null;
     }
 
     public static boolean isRPGEntity(LivingEntity e) {
@@ -120,6 +133,11 @@ public class RPGEntity {
             // Update entity equipment
             this.entityUUID = entity.getUniqueId();
             updateEquipment();
+
+            // Apply custom model if available
+            if (customModelKey != null && !customModelKey.isEmpty()) {
+                applyCustomModel(livingEntity);
+            }
 
             // Store entity in plugin storage
             RPGCore.entityStorage.put(entity.getUniqueId(), this);
@@ -190,6 +208,14 @@ public class RPGEntity {
                     }
                 }
 
+                // Remove display entity if present
+                if (displayEntityUUID != null) {
+                    Entity displayEntity = Bukkit.getEntity(displayEntityUUID);
+                    if (displayEntity != null) {
+                        displayEntity.remove();
+                    }
+                }
+
                 // Remove entity from storage and world
                 RPGCore.entityStorage.remove(entityUUID);
                 entity.remove();
@@ -221,6 +247,48 @@ public class RPGEntity {
                 equipment.setItemInMainHandDropChance(0);
                 equipment.setItemInOffHandDropChance(0);
             }
+        }
+    }
+
+    /**
+     * Applies a custom model to the entity using an ItemDisplay entity.
+     * The display entity rides on top of the main entity and shows the custom model.
+     */
+    private void applyCustomModel(LivingEntity entity) {
+        try {
+            // Create an ItemDisplay entity at the same location
+            Location loc = entity.getLocation();
+            ItemDisplay display = (ItemDisplay) entity.getWorld().spawnEntity(loc, EntityType.ITEM_DISPLAY);
+            
+            // Create an item with the custom model
+            ItemStack displayItem = new ItemStack(Material.PAPER);
+            org.bukkit.inventory.meta.ItemMeta meta = displayItem.getItemMeta();
+            
+            // Set the custom model key
+            NamespacedKey modelKey = NamespacedKey.fromString(customModelKey);
+            if (modelKey != null) {
+                meta.setItemModel(modelKey);
+                displayItem.setItemMeta(meta);
+                
+                // Set the item on the display entity
+                display.setItemStack(displayItem);
+                
+                // Configure display properties
+                display.setBillboard(Display.Billboard.VERTICAL);  // Face the player
+                display.setViewRange(64.0f);  // Visible from 64 blocks away
+                
+                // Make the display entity ride the main entity
+                entity.addPassenger(display);
+                
+                // Make the main entity invisible so only custom model shows
+                entity.setInvisible(true);
+                
+                // Store the display entity UUID
+                this.displayEntityUUID = display.getUniqueId();
+            }
+        } catch (Exception e) {
+            // If custom model application fails, log warning but don't crash
+            Bukkit.getLogger().warning("Failed to apply custom model to entity: " + e.getMessage());
         }
     }
 }

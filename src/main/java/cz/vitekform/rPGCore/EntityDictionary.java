@@ -3,7 +3,13 @@ package cz.vitekform.rPGCore;
 import cz.vitekform.rPGCore.objects.RPGEntity;
 import org.bukkit.entity.EntityType;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class EntityDictionary {
+
+    // Map to store loaded entities from entities.yml
+    public static final Map<String, RPGEntity> entities = new HashMap<>();
 
     public static final String ENTITY_PREFIX = "entity.";
     public static final String ENTITY_NAME = ENTITY_PREFIX + "name";
@@ -32,6 +38,15 @@ public class EntityDictionary {
     public static final String ENTITY_LOCATION_X = ENTITY_PREFIX + "location.x";
     public static final String ENTITY_LOCATION_Y = ENTITY_PREFIX + "location.y";
     public static final String ENTITY_LOCATION_Z = ENTITY_PREFIX + "location.z";
+
+    /**
+     * Gets an entity by its ID from the loaded entities.
+     * @param id The entity ID
+     * @return The RPGEntity or null if not found
+     */
+    public static RPGEntity getEntity(String id) {
+        return entities.get(id);
+    }
 
 
     public static RPGEntity BANDIT_TUTORIAL_MELEE() {

@@ -1,0 +1,53 @@
+# RPGCore Entities Configuration
+# Each entity must have: id, visibleName, entityType
+# Optional attributes: level, maxHealth, health, attack, defense, speed, experienceAfterDefeat, drops, isBoss, isFriendly, hasVisibleName
+#
+# Custom Textures and Models:
+#   texture.path: Path to texture file in /plugins/RPGCore/entities/textures/ (e.g., "bandit.png")
+#   model.path: Path to custom model JSON in /plugins/RPGCore/entities/models/ (e.g., "bandit.json")
+#   Note: Custom models for entities are displayed using ItemDisplay entities riding on the main entity
+#   Note: The main entity will be made invisible when a custom model is applied
+#
+# entityType: Valid Minecraft entity types (e.g., ZOMBIE, SKELETON, VINDICATOR, etc.)
+# drops: List of item IDs from items.yml that this entity drops when defeated
+
+entities:
+  # Example custom entity
+  bandit_tutorial_melee:
+    id: "bandit_tutorial_melee"
+    visibleName: "Bandit"
+    entityType: VINDICATOR
+    level: 1
+    maxHealth: 20.0
+    health: 20.0
+    attack: 5.0
+    defense: 2
+    speed: 0.2
+    experienceAfterDefeat: 10
+    drops: []
+    isBoss: false
+    isFriendly: false
+    hasVisibleName: true
+    # Custom model/texture (uncomment to enable)
+    # texture.path: "bandit.png"
+    # model.path: "bandit.json"
+
+  # Example boss entity
+  # goblin_king:
+  #   id: "goblin_king"
+  #   visibleName: "Goblin King"
+  #   entityType: ZOMBIE
+  #   level: 10
+  #   maxHealth: 200.0
+  #   health: 200.0
+  #   attack: 15.0
+  #   defense: 10
+  #   speed: 0.3
+  #   experienceAfterDefeat: 500
+  #   drops:
+  #     - "adventurer_sword"
+  #   isBoss: true
+  #   isFriendly: false
+  #   hasVisibleName: true
+  #   texture.path: "goblin_king.png"
+  #   model.path: "goblin_king.json"

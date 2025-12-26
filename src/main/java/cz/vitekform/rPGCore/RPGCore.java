@@ -129,7 +129,11 @@ public final class RPGCore extends JavaPlugin {
         ItemLoader itemLoader = new ItemLoader(this);
         itemLoader.loadItems();
         
-        // Generate resource pack for custom items
+        // Load entities from entities.yml
+        EntityLoader entityLoader = new EntityLoader(this);
+        entityLoader.loadEntities();
+        
+        // Generate resource pack for custom items and entities
         ResourcePackGenerator resourcePackGenerator = new ResourcePackGenerator(this);
         resourcePackGenerator.generate();
 
@@ -419,9 +423,20 @@ public final class RPGCore extends JavaPlugin {
                 if (ctx.getSource().getSender() instanceof Player p) {
                     RPGPlayer pl = playerStorage.get(p.getUniqueId());
                     if (pl != null) {
-                        // Summon a test entity
+                        // Summon a test entity - prefer loaded entity from config, fallback to hardcoded
                         Location loc = p.getLocation();
-                        RPGEntity entity = EntityDictionary.BANDIT_TUTORIAL_MELEE();
+                        RPGEntity entity;
+                        
+                        // Try to get entity from EntityDictionary (loaded from entities.yml)
+                        if (EntityDictionary.entities.containsKey("bandit_tutorial_melee")) {
+                            // Clone the entity from dictionary so we don't modify the template
+                            RPGEntity template = EntityDictionary.entities.get("bandit_tutorial_melee");
+                            entity = cloneEntity(template);
+                        } else {
+                            // Fallback to hardcoded entity
+                            entity = EntityDictionary.BANDIT_TUTORIAL_MELEE();
+                        }
+                        
                         UUID uuid = entity.spawnIn(loc).getUniqueId();
                         entityStorage.put(uuid, entity);
                         ctx.getSource().getSender().sendMessage(Component.text("Test entity summoned!", NamedTextColor.GREEN));
@@ -550,5 +565,30 @@ public final class RPGCore extends JavaPlugin {
                 }
             }
         }.runTaskTimer(RPGCore.getPlugin(RPGCore.class), 10, 20);
+    }
+
+    /**
+     * Creates a copy of an RPGEntity template for spawning.
+     * This prevents modifying the template entity when spawning instances.
+     */
+    private static RPGEntity cloneEntity(RPGEntity template) {
+        RPGEntity clone = new RPGEntity();
+        clone.visibleName = template.visibleName;
+        clone.level = template.level;
+        clone.maxHealth = template.maxHealth;
+        clone.health = template.health;
+        clone.attack = template.attack;
+        clone.defense = template.defense;
+        clone.speed = template.speed;
+        clone.experienceAfterDefeat = template.experienceAfterDefeat;
+        clone.drops = new ArrayList<>(template.drops);
+        clone.isBoss = template.isBoss;
+        clone.isFriendly = template.isFriendly;
+        clone.hasVisibleName = template.hasVisibleName;
+        clone.entityType = template.entityType;
+        clone.modelPath = template.modelPath;
+        clone.texturePath = template.texturePath;
+        clone.customModelKey = template.customModelKey;
+        return clone;
     }
 }
