@@ -1,0 +1,64 @@
+# Example entities.yml configuration with custom models/textures
+# Copy this to your plugins/RPGCore/entities.yml file
+
+entities:
+  # Example 1: Simple custom entity with texture only
+  # The model will be auto-generated
+  custom_warrior:
+    id: "custom_warrior"
+    visibleName: "§cCustom Warrior"
+    entityType: ZOMBIE
+    level: 5
+    maxHealth: 100.0
+    health: 100.0
+    attack: 12.0
+    defense: 8
+    speed: 0.25
+    experienceAfterDefeat: 50
+    drops:
+      - "adventurer_sword"
+    isBoss: false
+    isFriendly: false
+    hasVisibleName: true
+    # Place custom_warrior.png in plugins/RPGCore/entities/textures/
+    texture.path: "custom_warrior.png"
+
+  # Example 2: Boss entity with custom model and texture
+  fire_demon:
+    id: "fire_demon"
+    visibleName: "§6Fire Demon"
+    entityType: BLAZE
+    level: 20
+    maxHealth: 500.0
+    health: 500.0
+    attack: 30.0
+    defense: 15
+    speed: 0.2
+    experienceAfterDefeat: 200
+    drops: []
+    isBoss: true
+    isFriendly: false
+    hasVisibleName: true
+    # Place fire_demon.png in plugins/RPGCore/entities/textures/
+    texture.path: "fire_demon.png"
+    # Place fire_demon.json in plugins/RPGCore/entities/models/
+    model.path: "fire_demon.json"
+
+  # Example 3: Friendly NPC entity
+  village_elder:
+    id: "village_elder"
+    visibleName: "§bVillage Elder"
+    entityType: VILLAGER
+    level: 1
+    maxHealth: 50.0
+    health: 50.0
+    attack: 0.0
+    defense: 5
+    speed: 0.1
+    experienceAfterDefeat: 0
+    drops: []
+    isBoss: false
+    isFriendly: true
+    hasVisibleName: true
+    # Place village_elder.png in plugins/RPGCore/entities/textures/
+    texture.path: "village_elder.png"
